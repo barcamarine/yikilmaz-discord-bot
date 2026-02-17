@@ -1,5 +1,5 @@
 import nextcord as discord
-from discord.ext import commands, tasks
+from nextcord.ext import commands, tasks
 import os
 from datetime import datetime, time
 
