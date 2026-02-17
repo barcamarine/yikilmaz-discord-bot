@@ -1,20 +1,14 @@
 import discord
 from discord.ext import commands, tasks
-import asyncio
 import os
 from datetime import datetime, time
-import random
 
 # Bot ayarları
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
-intents.presences = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
-
-# Müzik kuyruğu
-music_queues = {}
 
 # Otomatik duyurular
 announcements = {}
@@ -24,52 +18,6 @@ async def on_ready():
     print(f'✅ {bot.user} olarak giriş yapıldı!')
     print(f'📊 {len(bot.guilds)} sunucuda aktif!')
     check_announcements.start()
-
-# ==================== MÜZİK KOMUTLARI ====================
-
-@bot.command()
-async def join(ctx):
-    """Ses kanalına katıl"""
-    if ctx.author.voice:
-        channel = ctx.author.voice.channel
-        await channel.connect()
-        await ctx.send(f'🔊 **{channel.name}** kanalına katıldım!')
-    else:
-        await ctx.send('❌ Önce bir ses kanalına gir!')
-
-@bot.command()
-async def leave(ctx):
-    """Ses kanalından ayrıl"""
-    if ctx.voice_client:
-        await ctx.voice_client.disconnect()
-        await ctx.send('👋 Görüşürüz!')
-    else:
-        await ctx.send('❌ Zaten bir kanalda değilim!')
-
-@bot.command()
-async def play(ctx, *, query):
-    """YouTube'dan müzik çal"""
-    await ctx.send('🎵 Müzik özelliği yakında aktif olacak! (Şu an demo mod)')
-
-@bot.command()
-async def pause(ctx):
-    """Müziği duraklat"""
-    await ctx.send('⏸️ Müzik duraklatıldı!')
-
-@bot.command()
-async def resume(ctx):
-    """Müziği devam ettir"""
-    await ctx.send('▶️ Müzik devam ediyor!')
-
-@bot.command()
-async def skip(ctx):
-    """Şarkıyı atla"""
-    await ctx.send('⏭️ Şarkı atlandı!')
-
-@bot.command()
-async def queue(ctx):
-    """Sırayı göster"""
-    await ctx.send('📋 Çalma sırası: (Boş)')
 
 # ==================== DUYURU KOMUTLARI ====================
 
@@ -151,7 +99,6 @@ async def yardim(ctx):
     """Yardım menüsü"""
     embed = discord.Embed(title='🤖 YIKILMAZ BOT - KOMUTLAR', color=0x3498db)
     
-    embed.add_field(name='🎵 Müzik', value='`!join` `!leave` `!play` `!pause` `!resume` `!skip` `!queue`', inline=False)
     embed.add_field(name='📢 Duyuru', value='`!duyuru` `!otomatik_duyuru` `!duyuru_sil` `!duyuru_liste`', inline=False)
     embed.add_field(name='⚙️ Diğer', value='`!ping` `!yardim`', inline=False)
     
