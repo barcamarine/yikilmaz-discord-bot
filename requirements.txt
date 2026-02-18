@@ -2,3 +2,4 @@ setuptools==69.0.3
 audioop-lts==0.2.1
 nextcord==2.6.0
 python-dotenv==1.0.0
+python_version==3.11.0
