@@ -267,18 +267,64 @@ async def haftalik_sil(ctx, id: int):
     else:
         await ctx.send('❌ Bulunamadı!')
 
-@bot.command()
+@bot.command(name='haftalik_liste')
 async def haftalik_liste(ctx):
-    guild_duyurular = [d for d in haftalik_duyurular if d['guild_id'] == ctx.guild.id or d['guild_id'] is None]
-    if not guild_duyurular:
-        await ctx.send('📋 Haftalık duyuru yok!')
-        return
-    guild_duyurular.sort(key=lambda x: (x['gun'], x['time'].hour, x['time'].minute))
-    msg = '📋 **Haftalık Duyurular:**\n\n'
-    for d in guild_duyurular[:15]:
-        saat = d['time'].strftime('%H:%M')
-        msg += f'🆔 **{d["id"]}** | 📅 {d["gun_adi"]} 🕐 {saat}\n'
-    await ctx.send(msg)
+    """Hem hazır sistem etkinlikleri hem kullanıcı eklenenleri göster"""
+    # Kullanıcı eklenen duyurular (guild'e özel)
+    guild_duyurular = [d for d in haftalik_duyurular if d['guild_id'] == ctx.guild.id]
+    
+    # Sistem hazır etkinlikleri (guild_id = None olanlar)
+    hazir_etkinlikler = [d for d in haftalik_duyurular if d['guild_id'] is None]
+    
+    embed = discord.Embed(title='📅 HAFTALIK DUYURULAR', color=0x3498db)
+    
+    # === HAZIR ETKİNLİKLER (Sistem) ===
+    if hazir_etkinlikler:
+        gunler_sirali = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
+        
+        hazir_msg = ""
+        for gun_adi in gunler_sirali:
+            gun_etkinlik = [d for d in hazir_etkinlikler if d['gun_adi'] == gun_adi]
+            if gun_etkinlik:
+                gun_etkinlik.sort(key=lambda x: (x['time'].hour, x['time'].minute))
+                hazir_msg += f"\n**{gun_adi}**\n"
+                for d in gun_etkinlik:
+                    saat = d['time'].strftime('%H:%M')
+                    # Temiz mesaj (10 dk sonra ve @everyone kaldır)
+                    mesaj = d['message'].replace('||@everyone|| 📢 10 dk sonra ', '')
+                    hazir_msg += f"🕐 {saat} → {mesaj}\n"
+        
+        embed.add_field(
+            name=f"🤖 Sistem Etkinlikleri ({len(hazir_etkinlikler)} adet)", 
+            value=hazir_msg[:1000] or "Yok", 
+            inline=False
+        )
+    
+    # === KULLANICI EKLENEN DUYURULAR ===
+    if guild_duyurular:
+        guild_duyurular.sort(key=lambda x: (x['gun'], x['time'].hour, x['time'].minute))
+        
+        user_msg = ""
+        for d in guild_duyurular[:15]:  # Max 15 tane göster
+            saat = d['time'].strftime('%H:%M')
+            kanal = bot.get_channel(d['channel_id'])
+            kanal_adi = kanal.mention if kanal else f"ID:{d['channel_id']}"
+            user_msg += f"🆔 **{d['id']}** | 📅 {d['gun_adi']} 🕐 {saat} → {kanal_adi}\n"
+        
+        embed.add_field(
+            name=f"👤 Eklenen Duyurular ({len(guild_duyurular)} adet)", 
+            value=user_msg, 
+            inline=False
+        )
+    else:
+        embed.add_field(
+            name="👤 Eklenen Duyurular", 
+            value="Henüz eklenen duyuru yok.\n`!haftalik_duyuru` ile ekleyebilirsiniz.", 
+            inline=False
+        )
+    
+    embed.set_footer(text=f"Toplam: {len(hazir_etkinlikler) + len(guild_duyurular)} duyuru")
+    await ctx.send(embed=embed)
 
 # ==================== TARİHLİ DUYURULAR ====================
 
