@@ -1,4 +1,4 @@
+yt-dlp==2024.2.11
+nextcord==2.6.0
 setuptools==69.0.3
 audioop-lts==0.2.1
-nextcord==2.6.0
-python-dotenv==1.0.0
