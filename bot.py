@@ -39,7 +39,150 @@ async def on_ready():
     print(f'✅ {bot.user} olarak giriş yapıldı!')
     print(f'📊 {len(bot.guilds)} sunucuda aktif!')
     print(f'⏰ Bot saati: {datetime.now()}')
+    
+    # ========== ETKİNLİKLERİ OTOMATİK YÜKLE ==========
+    await load_events()
+    
     check_all_announcements.start()
+
+async def load_events():
+    """Tüm etkinlikleri otomatik yükle (10 dk önce) - Jotun YOK"""
+    global haftalik_id
+    
+    # Kanal ID'sini buraya yaz (etkinlik kanalının ID'si)
+    # Örnek: 1234567890123456789
+    KANAL_ID = 792408594465030165  # <-- BUNU DEĞİŞTİR!
+    
+    # ========== PAZARTESİ ==========
+    events_pzt = [
+        (10, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (11, 50, "🔥 Kusursuz Cehennem başlıyor!"),
+        (12, 50, "🔥 Kusursuz Cehennem & 🌐 Sanal Evren Etkinliği başlıyor!"),
+        (15, 50, "🔥 Kusursuz Cehennem başlıyor!"),
+        (16, 50, "🔥 Kusursuz Cehennem başlıyor!"),
+        (17, 50, "⚔️ Düello Turnuvası (Savaşçı) başlıyor!"),
+        (18, 30, "🐉 Antik Ejderha Kutbu Etkinliği başlıyor!"),
+        (18, 50, "🌐 Sanal Evren Etkinliği başlıyor!"),
+        (19, 20, "🛡️ Savaş Arenası Etkinliği başlıyor!"),
+        (20, 5, "⚔️ Grup Düello Turnuvası başlıyor!"),
+        (21, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+    ]
+    
+    # ========== SALI ==========
+    events_sal = [
+        (9, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (10, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (11, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (12, 50, "🌐 Sanal Evren Etkinliği başlıyor!"),
+        (15, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (16, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (17, 50, "⚔️ Düello Turnuvası (Ninja) başlıyor!"),
+        (18, 50, "🌐 Sanal Evren Etkinliği başlıyor!"),
+        (19, 20, "🛡️ Savaş Arenası Etkinliği başlıyor!"),
+        (20, 5, "⚔️ Grup Düello Turnuvası başlıyor!"),
+    ]
+    
+    # ========== ÇARŞAMBA ==========
+    events_crs = [
+        (9, 50, "🔥 Kusursuz Cehennem başlıyor!"),
+        (10, 50, "🔥 Kusursuz Cehennem başlıyor!"),
+        (11, 50, "🌐 Sanal Evren Etkinliği başlıyor!"),
+        (15, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (16, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (17, 50, "⚔️ Düello Turnuvası (Sura) başlıyor!"),
+        (18, 30, "🐉 Antik Ejderha Kutbu Etkinliği başlıyor!"),
+        (18, 50, "🔥 Kusursuz Cehennem başlıyor!"),
+        (19, 20, "👑 Üç İmparatorluk Savaşı Etkinliği başlıyor!"),
+        (21, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+    ]
+    
+    # ========== PERŞEMBE ==========
+    events_prş = [
+        (10, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (11, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (12, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (13, 50, "🌐 Sanal Evren Etkinliği başlıyor!"),
+        (15, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (16, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (17, 50, "⚔️ Düello Turnuvası (Şaman) başlıyor!"),
+        (18, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (19, 20, "🛡️ Savaş Arenası Etkinliği başlıyor!"),
+    ]
+    
+    # ========== CUMA ==========
+    events_cum = [
+        (9, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (10, 50, "🔥 Kusursuz Cehennem başlıyor!"),
+        (11, 50, "🔥 Kusursuz Cehennem & 🌐 Sanal Evren Etkinliği başlıyor!"),
+        (15, 50, "🔥 Kusursuz Cehennem başlıyor!"),
+        (16, 50, "⚔️ Düello Turnuvası (Genel) başlıyor!"),
+        (17, 50, "🔥 Kusursuz Cehennem başlıyor!"),
+        (18, 30, "🐉 Antik Ejderha Kutbu Etkinliği başlıyor!"),
+        (19, 0, "🛡️ Savaş Arenası Etkinliği başlıyor!"),
+        (19, 20, "🌐 Sanal Evren Etkinliği başlıyor!"),
+        (20, 5, "⚔️ Grup Düello Turnuvası başlıyor!"),
+    ]
+    
+    # ========== CUMARTESİ ==========
+    events_cts = [
+        (9, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (10, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (11, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (12, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (13, 50, "🌐 Sanal Evren Etkinliği başlıyor!"),
+        (15, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (16, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (17, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (18, 30, "🐉 Antik Ejderha Kutbu Etkinliği başlıyor!"),
+        (18, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (19, 20, "👑 Üç İmparatorluk Savaşı Etkinliği başlıyor!"),
+        (19, 50, "🌐 Sanal Evren Etkinliği başlıyor!"),
+        (22, 50, "🔥 Kusursuz Cehennem başlıyor!"),
+    ]
+    
+    # ========== PAZAR ==========
+    events_pzr = [
+        (9, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (10, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (11, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (12, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (13, 50, "🌐 Sanal Evren Etkinliği başlıyor!"),
+        (14, 50, "🌐 Sanal Evren Etkinliği başlıyor!"),
+        (15, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (16, 50, "🟢 Yeşil Vadi Etkinliği başlıyor!"),
+        (17, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (18, 30, "🐉 Antik Ejderha Kutbu Etkinliği başlıyor!"),
+        (18, 50, "📖 Kayıp Alfabe Etkinliği başlıyor!"),
+        (19, 20, "🛡️ Savaş Arenası Etkinliği başlıyor!"),
+    ]
+    
+    # Tüm etkinlikleri ekle
+    gunler = [
+        (0, events_pzt, "Pazartesi"),
+        (1, events_sal, "Salı"),
+        (2, events_crs, "Çarşamba"),
+        (3, events_prş, "Perşembe"),
+        (4, events_cum, "Cuma"),
+        (5, events_cts, "Cumartesi"),
+        (6, events_pzr, "Pazar"),
+    ]
+    
+    for gun_no, events, gun_adi in gunler:
+        for hour, minute, message in events:
+            duyuru = {
+                'id': haftalik_id,
+                'gun': gun_no,
+                'gun_adi': gun_adi,
+                'channel_id': KANAL_ID,
+                'message': f"||@everyone|| 📢 10 dk sonra {message}",
+                'time': time(hour, minute),
+                'guild_id': None,  # Tüm sunucular için
+                'created_by': 'System'
+            }
+            haftalik_duyurular.append(duyuru)
+            haftalik_id += 1
+    
+    print(f'✅ {len(haftalik_duyurular)} etkinlik yüklendi!')
 
 # ==================== GÜNLÜK DUYURULAR (Her Gün) ====================
 
@@ -105,10 +248,7 @@ async def haftalik_duyuru(ctx, gun: str, saat: str, kanal: discord.TextChannel, 
     """Belirli günde tekrarlayan duyuru (Pazartesi, Salı, Çarşamba, Perşembe, Cuma, Cumartesi, Pazar)"""
     global haftalik_id
     
-    # Gün ismini normalize et
-    gun_normalize = gun.lower().replace('̇', '').replace('̈', '').replace('̧', '').replace('̨', '')
-    # Türkçe karakterleri düzelt
-    gun_normalize = gun_normalize.replace('ç', 'c').replace('ğ', 'g').replace('ı', 'i').replace('ö', 'o').replace('ş', 's').replace('ü', 'u')
+    gun_normalize = gun.lower().replace('ç', 'c').replace('ğ', 'g').replace('ı', 'i').replace('ö', 'o').replace('ş', 's').replace('ü', 'u')
     
     if gun_normalize not in TURKCE_GUNLER:
         await ctx.send('❌ Geçersiz gün! Doğru kullanım: Pazartesi, Salı, Çarşamba, Perşembe, Cuma, Cumartesi, Pazar')
@@ -120,7 +260,7 @@ async def haftalik_duyuru(ctx, gun: str, saat: str, kanal: discord.TextChannel, 
         
         duyuru = {
             'id': haftalik_id,
-            'gun': gun_no,  # 0=Pazartesi, 1=Salı...
+            'gun': gun_no,
             'gun_adi': gun.capitalize(),
             'channel_id': kanal.id,
             'message': mesaj,
@@ -152,23 +292,32 @@ async def haftalik_sil(ctx, id: int):
 @bot.command()
 async def haftalik_liste(ctx):
     """Haftalık duyuruları listele"""
-    guild_duyurular = [d for d in haftalik_duyurular if d['guild_id'] == ctx.guild.id]
+    guild_duyurular = [d for d in haftalik_duyurular if d['guild_id'] == ctx.guild.id or d['guild_id'] is None]
     if not guild_duyurular:
         await ctx.send('📋 Haftalık duyuru yok!')
         return
     
-    # Günlere göre sırala
     gun_siralama = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
     guild_duyurular.sort(key=lambda x: (x['gun'], x['time'].hour, x['time'].minute))
     
-    msg = '📋 **Haftalık Duyurular:**\n\n'
-    for d in guild_duyurular:
+    # Sayfalama (Discord 2000 karakter limiti)
+    sayfa = 1
+    toplam = len(guild_duyurular)
+    
+    msg = f'📋 **Haftalık Duyurular (Sayfa {sayfa}):**\nToplam: {toplam} adet\n\n'
+    
+    for i, d in enumerate(guild_duyurular[:20]):  # İlk 20
         channel = bot.get_channel(d['channel_id'])
         channel_mention = channel.mention if channel else '❌ Silinmiş Kanal'
         saat = d['time'].strftime('%H:%M')
-        msg += f'🆔 **{d["id"]}** | 📅 {d["gun_adi"]} 🕐 {saat} | {channel_mention}\n📝 {d["message"][:50]}...\n\n'
+        msg += f'🆔 **{d["id"]}** | 📅 {d["gun_adi"]} 🕐 {saat}\n📝 {d["message"][:40]}...\n\n'
+        
+        if len(msg) > 1800:
+            await ctx.send(msg)
+            msg = f'📋 **Haftalık Duyurular (Devam):**\n\n'
     
-    await ctx.send(msg)
+    if msg:
+        await ctx.send(msg)
 
 # ==================== TARİHLİ DUYURULAR (Bir Kez) ====================
 
@@ -179,7 +328,6 @@ async def tarihli_duyuru(ctx, tarih: str, saat: str, kanal: discord.TextChannel,
     global tarihli_id
     
     try:
-        # Tarih parse et (GG.AA.YYYY veya GG/AA/YYYY)
         tarih = tarih.replace('/', '.')
         gun, ay, yil = map(int, tarih.split('.'))
         hedef_tarih = datetime(yil, ay, gun)
@@ -226,7 +374,6 @@ async def tarihli_liste(ctx):
         await ctx.send('📋 Aktif tarihli duyuru yok!')
         return
     
-    # Tarihe göre sırala
     guild_duyurular.sort(key=lambda x: x['tarih'])
     
     msg = '📋 **Tarihli Duyurular (Bekleyen):**\n\n'
@@ -255,7 +402,6 @@ async def tum_duyurular(ctx):
     """Tüm duyuruları göster"""
     msg = '📋 **TÜM DUYURULAR:**\n\n'
     
-    # Günlük
     gunluk = [d for d in gunluk_duyurular if d['guild_id'] == ctx.guild.id]
     if gunluk:
         msg += f'🔄 **Günlük ({len(gunluk)} adet):**\n'
@@ -264,16 +410,16 @@ async def tum_duyurular(ctx):
             msg += f'  🆔{d["id"]} 🕐{saat}\n'
         msg += '\n'
     
-    # Haftalık
-    haftalik = [d for d in haftalik_duyurular if d['guild_id'] == ctx.guild.id]
+    haftalik = [d for d in haftalik_duyurular if d['guild_id'] == ctx.guild.id or d['guild_id'] is None]
     if haftalik:
         msg += f'📅 **Haftalık ({len(haftalik)} adet):**\n'
-        for d in haftalik:
+        for d in haftalik[:10]:  # İlk 10
             saat = d['time'].strftime('%H:%M')
             msg += f'  🆔{d["id"]} {d["gun_adi"]} 🕐{saat}\n'
+        if len(haftalik) > 10:
+            msg += f'  ... ve {len(haftalik)-10} adet daha\n'
         msg += '\n'
     
-    # Tarihli
     tarihli = [d for d in tarihli_duyurular if d['guild_id'] == ctx.guild.id and not d['sent']]
     if tarihli:
         msg += f'📆 **Tarihli ({len(tarihli)} adet):**\n'
@@ -293,7 +439,7 @@ async def check_all_announcements():
     """Tüm duyuruları kontrol et"""
     now = datetime.now()
     current_time = time(now.hour, now.minute)
-    current_weekday = now.weekday()  # 0=Pazartesi, 6=Pazar
+    current_weekday = now.weekday()
     
     # 1. Günlük duyurular (Her gün)
     for d in gunluk_duyurular:
@@ -340,11 +486,11 @@ async def yardim(ctx):
                     inline=False)
     
     embed.add_field(name='📅 Haftalık Duyuru', 
-                    value='`!haftalik_duyuru Gün HH:MM #kanal mesaj`\nÖrn: `!haftalik_duyuru Salı 18:15 #etkinlik ||@everyone|| Jotun!`\n`!haftalik_liste` | `!haftalik_sil ID`', 
+                    value='`!haftalik_duyuru Gün HH:MM #kanal mesaj`\n`!haftalik_liste` | `!haftalik_sil ID`', 
                     inline=False)
     
     embed.add_field(name='📆 Tarihli Duyuru', 
-                    value='`!tarihli_duyuru GG.AA.YYYY HH:MM #kanal mesaj`\nÖrn: `!tarihli_duyuru 25.12.2024 20:00 #etkinlik ||@everyone|| Event!`\n`!tarihli_liste` | `!tarihli_sil ID`', 
+                    value='`!tarihli_duyuru GG.AA.YYYY HH:MM #kanal mesaj`\n`!tarihli_liste` | `!tarihli_sil ID`', 
                     inline=False)
     
     embed.add_field(name='📢 Anlık Duyuru', 
