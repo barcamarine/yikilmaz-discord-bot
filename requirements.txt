@@ -1,6 +1,4 @@
---upgrade setuptools wheel
-setuptools>=68.0.0
-nextcord>=2.0.0
+discord.py>=2.3.0
 aiosqlite
 python-dotenv
 pytz
