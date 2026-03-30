@@ -1,5 +1,5 @@
+--upgrade setuptools wheel
 setuptools>=68.0.0
-wheel
 nextcord>=2.0.0
 aiosqlite
 python-dotenv
