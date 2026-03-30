@@ -1,6 +1,6 @@
 setuptools>=68.0.0
 wheel
-nextcord==2.6.0
-aiosqlite==0.19.0
-python-dotenv==1.0.0
-pytz==2024.1
+nextcord==2.0.1
+aiosqlite
+python-dotenv
+pytz
