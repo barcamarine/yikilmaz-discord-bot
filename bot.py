@@ -1,5 +1,5 @@
-import nextcord as discord
-from nextcord.ext import commands, tasks
+import discord
+from discord.ext import commands, tasks
 import os
 import aiosqlite
 import pytz
