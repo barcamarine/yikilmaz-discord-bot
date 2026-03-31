@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands, tasks
+from discord import app_commands
 import os
 import aiosqlite
 import pytz
@@ -31,6 +32,7 @@ TURKCE_GUNLER = {
 async def on_ready():
     await init_db()
     await load_system_events()
+    await bot.tree.sync()
     check_all_announcements.start()
     print(f'✅ {bot.user} olarak giriş yapıldı!')
     print(f'📊 {len(bot.guilds)} sunucuda aktif!')
@@ -177,6 +179,9 @@ async def load_system_events():
             print(f'✅ {len(events)} sistem etkinliği yüklendi!')
 
 # ==================== KOMUTLAR ====================
+    @bot.tree.command(name="ping", description="Bot çalışıyor mu kontrol eder")
+    async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message("Pong!")
 
 @bot.command()
 @commands.has_permissions(administrator=True)
