@@ -179,8 +179,8 @@ async def load_system_events():
             print(f'✅ {len(events)} sistem etkinliği yüklendi!')
 
 # ==================== KOMUTLAR ====================
-    @bot.tree.command(name="ping", description="Bot çalışıyor mu kontrol eder")
-    async def ping(interaction: discord.Interaction):
+   @bot.tree.command(name="ping", description="Bot çalışıyor mu kontrol eder")
+async def ping(interaction: discord.Interaction):
     await interaction.response.send_message("Pong!")
 
 @bot.command()
