@@ -426,4 +426,35 @@ if not TOKEN:
     except Exception as e:
         await interaction.followup.send(f"❌ Hata: {str(e)}")
 
+@bot.command()
+async def cal(ctx, *, sorgu):
+    if not ctx.author.voice:
+        return await ctx.send("❌ Sesli kanala gir!")
+
+    channel = ctx.author.voice.channel
+
+    if not ctx.voice_client:
+        await channel.connect()
+
+    vc = ctx.voice_client
+
+    try:
+        if "http" not in sorgu:
+            sorgu = f"ytsearch:{sorgu}"
+
+        info = ytdl.extract_info(sorgu, download=False)
+        if 'entries' in info:
+            info = info['entries'][0]
+
+        url = info['url']
+        title = info.get('title', 'Bilinmeyen')
+
+        source = await discord.FFmpegOpusAudio.from_probe(url, options='-vn')
+        vc.play(source)
+
+        await ctx.send(f"🎵 Çalıyor: {title}")
+
+    except Exception as e:
+        await ctx.send(f"❌ Hata: {str(e)}")
+
 bot.run(TOKEN)
