@@ -30,8 +30,18 @@ TURKCE_GUNLER = {
 @bot.event
 async def on_ready():
     await init_db()
+
+    # 💥 ESKİ EVENTLERİ SİL
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("DELETE FROM weekly WHERE is_system = 1")
+        await db.commit()
+        print("🗑️ Eski eventler silindi!")
+
+    # ✅ YENİ EVENTLERİ YÜKLE
     await load_system_events()
+
     check_all_announcements.start()
+
     print(f'✅ {bot.user} olarak giriş yapıldı!')
     print(f'📊 {len(bot.guilds)} sunucuda aktif!')
     print(f'💾 Veritabanı: {DB_PATH}')
