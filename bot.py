@@ -32,7 +32,7 @@ TURKCE_GUNLER = {
 async def on_ready():
     await init_db()
     await load_system_events()
-    await bot.tree.sync()
+    bot.loop.create_task(bot.tree.sync())
     check_all_announcements.start()
     print(f'✅ {bot.user} olarak giriş yapıldı!')
     print(f'📊 {len(bot.guilds)} sunucuda aktif!')
