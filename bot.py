@@ -184,7 +184,7 @@ async def ping(interaction: discord.Interaction):
     await interaction.response.defer()  # hemen cevap ver (timeout engeller)
     import asyncio
     await asyncio.sleep(1)  # küçük gecikme (Railway fix)
-    await interaction.followup.send("7/24 Nöbetteyim Komutanım!")
+    await interaction.followup.send(f"{interaction.user.mention} 7/24 Nöbetteyim Komutanım! :saluting_face: ")
 
 @bot.command()
 @commands.has_permissions(administrator=True)
