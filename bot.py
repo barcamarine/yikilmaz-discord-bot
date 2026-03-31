@@ -1,4 +1,5 @@
 import discord
+import random
 from discord.ext import commands, tasks
 import os
 import aiosqlite
@@ -7,6 +8,19 @@ from datetime import datetime, time
 from dotenv import load_dotenv
 
 load_dotenv()
+
+ZARVS_LAFLAR = [
+    "💀 ezildin resmen",
+    "😂 bu kadar kötü zar mı atılır",
+    "👀 biraz daha çalışman lazım",
+    "🔥 bir dahaki sefere belki",
+    "😏 kolay lokmaymışsın",
+    "⚰️ mezarını kazdın",
+    "🤡 clown moment",
+    "🥶 buz gibi kaybettin",
+]
+
+ZAR_GIF = "https://www.hareketligifler.net/data/media/710/zar-hareketli-resim-0016.gif"
 
 # Türkiye saat dilimi
 TR_TZ = pytz.timezone('Europe/Istanbul')
@@ -360,6 +374,47 @@ async def yardim(ctx):
     embed.add_field(name='📆 Tarihli', value='`!tarihli_duyuru GG.AA.YYYY HH:MM #kanal mesaj`\\n`!tarihli_liste` | `!tarihli_sil ID`', inline=False)
     embed.add_field(name='📢 Anlık', value='`!duyuru #kanal mesaj`', inline=False)
     await ctx.send(embed=embed)
+
+@bot.command()
+async def zarvs(ctx, uye: discord.Member):
+    if uye.bot:
+        return await ctx.send("🤖 Botlarla oynayamazsın!")
+
+    if uye == ctx.author:
+        return await ctx.send("😅 Kendinle oynayamazsın!")
+
+    import random
+    import asyncio
+
+    # 🎬 GIF ile başlangıç
+    msg = await ctx.send(f"🎲 Zar atılıyor...\n{ZAR_GIF}")
+
+    await asyncio.sleep(2)
+
+    # 🎲 zarlar
+    sen = random.randint(1, 6)
+    rakip = random.randint(1, 6)
+
+    sonuc = f"🎲 {ctx.author.mention} vs {uye.mention}\n\n"
+    sonuc += f"{ctx.author.mention} → 🎲 {sen}\n"
+    sonuc += f"{uye.mention} → 🎲 {rakip}\n\n"
+
+    if sen > rakip:
+        kazanan = ctx.author
+        kaybeden = uye
+    elif rakip > sen:
+        kazanan = uye
+        kaybeden = ctx.author
+    else:
+        return await msg.edit(content=sonuc + "🤝 Berabere! Tekrar deneyin.")
+
+    laf = random.choice(ZARVS_LAFLAR)
+
+    sonuc += f"🏆 Kazanan: {kazanan.mention}\n"
+    sonuc += f"💀 Kaybeden: {kaybeden.mention}\n\n"
+    sonuc += f"{kaybeden.mention} {laf}"
+
+    await msg.edit(content=sonuc)
 
 # ==================== KONTROL SİSTEMİ ====================
 
