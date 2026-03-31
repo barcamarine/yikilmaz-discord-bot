@@ -1,5 +1,4 @@
 import discord
-import yt_dlp
 from discord.ext import commands, tasks
 import os
 import aiosqlite
@@ -19,8 +18,7 @@ intents.members = True
 
 
 bot = commands.Bot(command_prefix='!', intents=intents)
-ytdl = yt_dlp.YoutubeDL({'format': 'bestaudio', 'quiet': True})
-ffmpeg_options = {'options': '-vn'}
+
 
 # Railway'de /data dizini persistent volume olarak mount edilir
 DB_PATH = os.getenv('DATABASE_PATH', '/data/announcements.db')
@@ -405,7 +403,6 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 if not TOKEN:
     raise ValueError("DISCORD_TOKEN bulunamadı! Railway Variables'a ekleyin.")
 
- vc = interaction.guild.voice_client
 
     try:
         if "http" not in sorgu:
