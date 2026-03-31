@@ -1,4 +1,5 @@
 import discord
+import yt_dlp
 from discord.ext import commands, tasks
 import os
 import aiosqlite
@@ -16,7 +17,10 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
+
 bot = commands.Bot(command_prefix='!', intents=intents)
+ytdl = yt_dlp.YoutubeDL({'format': 'bestaudio', 'quiet': True})
+ffmpeg_options = {'options': '-vn'}
 
 # Railway'de /data dizini persistent volume olarak mount edilir
 DB_PATH = os.getenv('DATABASE_PATH', '/data/announcements.db')
@@ -29,6 +33,7 @@ TURKCE_GUNLER = {
 
 @bot.event
 async def on_ready():
+    await bot.tree.sync()
     await init_db()
     await load_system_events()
     check_all_announcements.start()
@@ -399,5 +404,26 @@ async def on_command_error(ctx, error):
 TOKEN = os.getenv('DISCORD_TOKEN')
 if not TOKEN:
     raise ValueError("DISCORD_TOKEN bulunamadı! Railway Variables'a ekleyin.")
+
+ vc = interaction.guild.voice_client
+
+    try:
+        if "http" not in sorgu:
+            sorgu = f"ytsearch:{sorgu}"
+
+        info = ytdl.extract_info(sorgu, download=False)
+        if 'entries' in info:
+            info = info['entries'][0]
+
+        url = info['url']
+        title = info.get('title', 'Bilinmeyen')
+
+        source = await discord.FFmpegOpusAudio.from_probe(url, **ffmpeg_options)
+        vc.play(source)
+
+        await interaction.followup.send(f"🎵 Çalıyor: {title}")
+
+    except Exception as e:
+        await interaction.followup.send(f"❌ Hata: {str(e)}")
 
 bot.run(TOKEN)
