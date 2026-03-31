@@ -387,9 +387,12 @@ async def zarvs(ctx, uye: discord.Member):
     import asyncio
 
     # 🎬 GIF ile başlangıç
-    msg = await ctx.send(f"🎲 Zar atılıyor...\n{ZAR_GIF}")
+    embed = discord.Embed(title="🎲 Zar atılıyor...")
+    embed.set_image(url=ZAR_GIF)
 
-    await asyncio.sleep(2)
+    msg = await ctx.send(embed=embed)
+
+    await asyncio.sleep(4)
 
     # 🎲 zarlar
     sen = random.randint(1, 6)
@@ -414,7 +417,8 @@ async def zarvs(ctx, uye: discord.Member):
     sonuc += f"💀 Kaybeden: {kaybeden.mention}\n\n"
     sonuc += f"{kaybeden.mention} {laf}"
 
-    await msg.edit(content=sonuc)
+    embed = discord.Embed(description=sonuc)
+    await msg.edit(embed=embed)
 
 # ==================== KONTROL SİSTEMİ ====================
 
