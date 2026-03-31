@@ -181,7 +181,8 @@ async def load_system_events():
 # ==================== KOMUTLAR ====================
    @bot.tree.command(name="ping", description="Bot çalışıyor mu kontrol eder")
 async def ping(interaction: discord.Interaction):
-    await interaction.response.send_message("Pong!")
+    await interaction.response.defer()
+    await interaction.followup.send("Pong!")
 
 @bot.command()
 @commands.has_permissions(administrator=True)
