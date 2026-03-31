@@ -54,7 +54,8 @@ async def on_ready():
     # ✅ YENİ EVENTLERİ YÜKLE
     await load_system_events()
 
-    check_all_announcements.start()
+    if not check_all_announcements.is_running():
+        check_all_announcements.start()
 
     print(f'✅ {bot.user} olarak giriş yapıldı!')
     print(f'📊 {len(bot.guilds)} sunucuda aktif!')
