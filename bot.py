@@ -5,6 +5,8 @@ import aiosqlite
 import pytz
 from datetime import datetime, time
 from dotenv import load_dotenv
+import yt_dlp
+import asyncio
 
 load_dotenv()
 
@@ -27,6 +29,115 @@ TURKCE_GUNLER = {
     'persembe': 3, 'perşembe': 3, 'cuma': 4, 'cumartesi': 5, 'pazar': 6
 }
 
+# ==================== MÜZİK SİSTEMİ ====================
+
+# Müzik kuyrukları {guild_id: [song_info, ...]}
+music_queues = {}
+# Şu an çalan {guild_id: song_info}
+currently_playing = {}
+
+yt_dlp_opts = {
+    'format': 'bestaudio/best',
+    'noplaylist': True,
+    'quiet': True,
+    'no_warnings': True,
+    'extract_flat': False,
+    'default_search': 'ytsearch',
+}
+
+ffmpeg_opts = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+    'options': '-vn -bufsize 64k'
+}
+
+class Song:
+    def __init__(self, title, url, webpage_url, duration, thumbnail, requester):
+        self.title = title
+        self.url = url
+        self.webpage_url = webpage_url
+        self.duration = duration
+        self.thumbnail = thumbnail
+        self.requester = requester
+
+    def format_duration(self):
+        if self.duration:
+            minutes, seconds = divmod(self.duration, 60)
+            hours, minutes = divmod(minutes, 60)
+            if hours > 0:
+                return f"{hours}:{minutes:02d}:{seconds:02d}"
+            return f"{minutes}:{seconds:02d}"
+        return "Bilinmiyor"
+
+def get_queue(guild_id):
+    if guild_id not in music_queues:
+        music_queues[guild_id] = []
+    return music_queues[guild_id]
+
+async def extract_info(query):
+    """YouTube'dan video bilgisi çek"""
+    with yt_dlp.YoutubeDL(yt_dlp_opts) as ydl:
+        try:
+            # Eğer direkt URL ise
+            if query.startswith(('http://', 'https://', 'www.', 'youtube.com', 'youtu.be')):
+                info = ydl.extract_info(query, download=False)
+            else:
+                # Arama yap
+                info = ydl.extract_info(f"ytsearch:{query}", download=False)
+                if 'entries' in info and info['entries']:
+                    info = info['entries'][0]
+                else:
+                    return None
+            
+            return Song(
+                title=info.get('title', 'Bilinmiyor'),
+                url=info.get('url') or info.get('formats', [{}])[0].get('url'),
+                webpage_url=info.get('webpage_url', ''),
+                duration=info.get('duration'),
+                thumbnail=info.get('thumbnail', ''),
+                requester=None
+            )
+        except Exception as e:
+            print(f"Video bilgisi çekme hatası: {e}")
+            return None
+
+def play_next_song(guild_id, voice_client):
+    """Sıradaki şarkıyı çal"""
+    queue = get_queue(guild_id)
+    
+    if queue:
+        song = queue.pop(0)
+        currently_playing[guild_id] = song
+        
+        def after_playing(error):
+            if error:
+                print(f"Çalma hatası: {error}")
+            asyncio.run_coroutine_threadsafe(
+                play_next_song_async(guild_id, voice_client), 
+                bot.loop
+            )
+        
+        audio_source = discord.FFmpegPCMAudio(song.url, **ffmpeg_opts)
+        voice_client.play(audio_source, after=after_playing)
+    else:
+        currently_playing.pop(guild_id, None)
+        # 5 dakika sonra kanaldan ayrıl
+        asyncio.run_coroutine_threadsafe(
+            disconnect_after_delay(voice_client), 
+            bot.loop
+        )
+
+async def play_next_song_async(guild_id, voice_client):
+    """Async wrapper for play_next_song"""
+    play_next_song(guild_id, voice_client)
+
+async def disconnect_after_delay(voice_client, delay=300):
+    """Belirli süre sonra kanaldan ayrıl"""
+    await asyncio.sleep(delay)
+    if voice_client and not voice_client.is_playing() and voice_client.is_connected():
+        await voice_client.disconnect()
+
+# ==================== BOT EVENTS ====================
+
 @bot.event
 async def on_ready():
     await init_db()
@@ -35,6 +146,7 @@ async def on_ready():
     print(f'✅ {bot.user} olarak giriş yapıldı!')
     print(f'📊 {len(bot.guilds)} sunucuda aktif!')
     print(f'💾 Veritabanı: {DB_PATH}')
+    print(f'🎵 Müzik sistemi aktif!')
 
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
@@ -89,167 +201,92 @@ async def load_system_events():
     
     events = [
         # ========== PAZARTESİ ==========
-        # 14:00 Kayıp Alfabe → 13:50 duyuru
         (0, 13, 50, "📖 Kayıp Alfabe Etkinliği", "Pazartesi"),
-        # 15:00 Kusursuz Cehennem → 14:50 duyuru
         (0, 14, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
-        # 16:00 Kusursuz Cehennem & Sanal Evren → 15:50 duyuru
         (0, 15, 50, "🔥 Kusursuz Cehennem & 🌐 Sanal Evren Etkinliği", "Pazartesi"),
-        # 19:00 Kusursuz Cehennem → 18:50 duyuru
         (0, 18, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
-        # 20:00 Kusursuz Cehennem → 19:50 duyuru
         (0, 19, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
-        # 21:00 Düello Turnuvası (Savaşçı) → 20:50 duyuru
         (0, 20, 50, "⚔️ Düello Turnuvası (Savaşçı)", "Pazartesi"),
-        # 21:40 Antik Ejderha Kutbu → 21:30 duyuru
         (0, 21, 30, "🐉 Antik Ejderha Kutbu Etkinliği", "Pazartesi"),
-        # 22:00 Sanal Evren → 21:50 duyuru
         (0, 21, 50, "🌐 Sanal Evren Etkinliği", "Pazartesi"),
-        # 22:30 Savaş Arenası → 22:20 duyuru
         (0, 22, 20, "🛡️ Savaş Arenası Etkinliği", "Pazartesi"),
-        # 23:15 Jotun Etkinliği → 23:05 duyuru
         (0, 23, 5, "❄️ Jotun Etkinliği", "Pazartesi"),
-        # 01:00 (ertesi gün) Kayıp Alfabe → 00:50 duyuru
         (0, 0, 50, "📖 Kayıp Alfabe Etkinliği", "Pazartesi"),
         
         # ========== SALI ==========
-        # 13:00 Yeşil Vadi → 12:50 duyuru
         (1, 12, 50, "🟢 Yeşil Vadi Etkinliği", "Salı"),
-        # 14:00 Yeşil Vadi → 13:50 duyuru
         (1, 13, 50, "🟢 Yeşil Vadi Etkinliği", "Salı"),
-        # 15:00 Kayıp Alfabe → 14:50 duyuru
         (1, 14, 50, "📖 Kayıp Alfabe Etkinliği", "Salı"),
-        # 16:00 Sanal Evren → 15:50 duyuru
         (1, 15, 50, "🌐 Sanal Evren Etkinliği", "Salı"),
-        # 19:00 Yeşil Vadi → 18:50 duyuru
         (1, 18, 50, "🟢 Yeşil Vadi Etkinliği", "Salı"),
-        # 20:00 Yeşil Vadi → 19:50 duyuru
         (1, 19, 50, "🟢 Yeşil Vadi Etkinliği", "Salı"),
-        # 21:00 Düello Turnuvası (Ninja) → 20:50 duyuru
         (1, 20, 50, "⚔️ Düello Turnuvası (Ninja)", "Salı"),
-        # 22:00 Sanal Evren → 21:50 duyuru
         (1, 21, 50, "🌐 Sanal Evren Etkinliği", "Salı"),
-        # 22:30 Savaş Arenası → 22:20 duyuru
         (1, 22, 20, "🛡️ Savaş Arenası Etkinliği", "Salı"),
-        # 23:15 Grup Düello Turnuvası → 23:05 duyuru
         (1, 23, 5, "⚔️ Grup Düello Turnuvası", "Salı"),
         
         # ========== ÇARŞAMBA ==========
-        # 13:00 Kusursuz Cehennem → 12:50 duyuru
         (2, 12, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
-        # 14:00 Kusursuz Cehennem → 13:50 duyuru
         (2, 13, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
-        # 15:00 Sanal Evren → 14:50 duyuru
         (2, 14, 50, "🌐 Sanal Evren Etkinliği", "Çarşamba"),
-        # 18:00 Kayıp Alfabe → 17:50 duyuru
         (2, 17, 50, "📖 Kayıp Alfabe Etkinliği", "Çarşamba"),
-        # 19:00 Kayıp Alfabe → 18:50 duyuru
         (2, 18, 50, "📖 Kayıp Alfabe Etkinliği", "Çarşamba"),
-        # 21:00 Düello Turnuvası (Sura) → 20:50 duyuru
         (2, 20, 50, "⚔️ Düello Turnuvası (Sura)", "Çarşamba"),
-        # 21:40 Antik Ejderha Kutbu → 21:30 duyuru
         (2, 21, 30, "🐉 Antik Ejderha Kutbu Etkinliği", "Çarşamba"),
-        # 22:00 Kusursuz Cehennem → 21:50 duyuru
         (2, 21, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
-        # 22:30 Üç İmparatorluk Savaşı → 22:20 duyuru
         (2, 22, 20, "👑 Üç İmparatorluk Savaşı Etkinliği", "Çarşamba"),
-        # 01:00 (ertesi gün) Kayıp Alfabe → 00:50 duyuru
         (2, 0, 50, "📖 Kayıp Alfabe Etkinliği", "Çarşamba"),
         
         # ========== PERŞEMBE ==========
-        # 14:00 Kayıp Alfabe → 13:50 duyuru
         (3, 13, 50, "📖 Kayıp Alfabe Etkinliği", "Perşembe"),
-        # 15:00 Yeşil Vadi → 14:50 duyuru
         (3, 14, 50, "🟢 Yeşil Vadi Etkinliği", "Perşembe"),
-        # 16:00 Yeşil Vadi → 15:50 duyuru
         (3, 15, 50, "🟢 Yeşil Vadi Etkinliği", "Perşembe"),
-        # 17:00 Sanal Evren → 16:50 duyuru
         (3, 16, 50, "🌐 Sanal Evren Etkinliği", "Perşembe"),
-        # 18:00 Kayıp Alfabe → 17:50 duyuru
         (3, 17, 50, "📖 Kayıp Alfabe Etkinliği", "Perşembe"),
-        # 19:00 Yeşil Vadi → 18:50 duyuru
         (3, 18, 50, "🟢 Yeşil Vadi Etkinliği", "Perşembe"),
-        # 21:00 Düello Turnuvası (Şaman) → 20:50 duyuru
         (3, 20, 50, "⚔️ Düello Turnuvası (Şaman)", "Perşembe"),
-        # 22:00 Yeşil Vadi → 21:50 duyuru
         (3, 21, 50, "🟢 Yeşil Vadi Etkinliği", "Perşembe"),
-        # 22:30 Savaş Arenası → 22:20 duyuru
         (3, 22, 20, "🛡️ Savaş Arenası Etkinliği", "Perşembe"),
         
         # ========== CUMA ==========
-        # 13:00 Kayıp Alfabe → 12:50 duyuru
         (4, 12, 50, "📖 Kayıp Alfabe Etkinliği", "Cuma"),
-        # 14:00 Kusursuz Cehennem → 13:50 duyuru
         (4, 13, 50, "🔥 Kusursuz Cehennem", "Cuma"),
-        # 15:00 Kusursuz Cehennem & Sanal Evren → 14:50 duyuru
         (4, 14, 50, "🔥 Kusursuz Cehennem & 🌐 Sanal Evren Etkinliği", "Cuma"),
-        # 19:00 Kusursuz Cehennem → 18:50 duyuru
         (4, 18, 50, "🔥 Kusursuz Cehennem", "Cuma"),
-        # 20:00 Düello Turnuvası (Genel) → 19:50 duyuru
         (4, 19, 50, "⚔️ Düello Turnuvası (Genel)", "Cuma"),
-        # 21:00 Kusursuz Cehennem → 20:50 duyuru
         (4, 20, 50, "🔥 Kusursuz Cehennem", "Cuma"),
-        # 21:40 Antik Ejderha Kutbu → 21:30 duyuru
         (4, 21, 30, "🐉 Antik Ejderha Kutbu Etkinliği", "Cuma"),
-        # 22:00 Savaş Arenası → 21:50 duyuru
         (4, 21, 50, "🛡️ Savaş Arenası Etkinliği", "Cuma"),
-        # 22:20 Sanal Evren → 22:10 duyuru
         (4, 22, 10, "🌐 Sanal Evren Etkinliği", "Cuma"),
-        # 23:15 Grup Düello Turnuvası → 23:05 duyuru
         (4, 23, 5, "⚔️ Grup Düello Turnuvası", "Cuma"),
         
         # ========== CUMARTESİ ==========
-        # 13:00 Kayıp Alfabe → 12:50 duyuru
         (5, 12, 50, "📖 Kayıp Alfabe Etkinliği", "Cumartesi"),
-        # 14:00 Kayıp Alfabe → 13:50 duyuru
         (5, 13, 50, "📖 Kayıp Alfabe Etkinliği", "Cumartesi"),
-        # 15:00 Yeşil Vadi → 14:50 duyuru
         (5, 14, 50, "🟢 Yeşil Vadi Etkinliği", "Cumartesi"),
-        # 16:00 Yeşil Vadi → 15:50 duyuru
         (5, 15, 50, "🟢 Yeşil Vadi Etkinliği", "Cumartesi"),
-        # 17:00 Sanal Evren → 16:50 duyuru
         (5, 16, 50, "🌐 Sanal Evren Etkinliği", "Cumartesi"),
-        # 18:00 Kayıp Alfabe → 17:50 duyuru
         (5, 17, 50, "📖 Kayıp Alfabe Etkinliği", "Cumartesi"),
-        # 19:00 Kayıp Alfabe → 18:50 duyuru
         (5, 18, 50, "📖 Kayıp Alfabe Etkinliği", "Cumartesi"),
-        # 20:00 Yeşil Vadi → 19:50 duyuru
         (5, 19, 50, "🟢 Yeşil Vadi Etkinliği", "Cumartesi"),
-        # 21:40 Antik Ejderha Kutbu → 21:30 duyuru
         (5, 21, 30, "🐉 Antik Ejderha Kutbu Etkinliği", "Cumartesi"),
-        # 22:00 Yeşil Vadi → 21:50 duyuru
         (5, 21, 50, "🟢 Yeşil Vadi Etkinliği", "Cumartesi"),
-        # 22:30 Üç İmparatorluk Savaşı → 22:20 duyuru
         (5, 22, 20, "👑 Üç İmparatorluk Savaşı Etkinliği", "Cumartesi"),
-        # 23:00 Sanal Evren → 22:50 duyuru
         (5, 22, 50, "🌐 Sanal Evren Etkinliği", "Cumartesi"),
-        # 02:00 (ertesi gün) Kusursuz Cehennem → 01:50 duyuru
         (5, 1, 50, "🔥 Kusursuz Cehennem", "Cumartesi"),
         
         # ========== PAZAR ==========
-        # 13:00 Yeşil Vadi → 12:50 duyuru
         (6, 12, 50, "🟢 Yeşil Vadi Etkinliği", "Pazar"),
-        # 14:00 Yeşil Vadi → 13:50 duyuru
         (6, 13, 50, "🟢 Yeşil Vadi Etkinliği", "Pazar"),
-        # 15:00 Kayıp Alfabe → 14:50 duyuru
         (6, 14, 50, "📖 Kayıp Alfabe Etkinliği", "Pazar"),
-        # 16:00 Kayıp Alfabe → 15:50 duyuru
         (6, 15, 50, "📖 Kayıp Alfabe Etkinliği", "Pazar"),
-        # 17:00 Sanal Evren → 16:50 duyuru
         (6, 16, 50, "🌐 Sanal Evren Etkinliği", "Pazar"),
-        # 18:00 Sanal Evren → 17:50 duyuru
         (6, 17, 50, "🌐 Sanal Evren Etkinliği", "Pazar"),
-        # 19:00 Yeşil Vadi → 18:50 duyuru
         (6, 18, 50, "🟢 Yeşil Vadi Etkinliği", "Pazar"),
-        # 20:00 Yeşil Vadi → 19:50 duyuru
         (6, 19, 50, "🟢 Yeşil Vadi Etkinliği", "Pazar"),
-        # 21:00 Kayıp Alfabe → 20:50 duyuru
         (6, 20, 50, "📖 Kayıp Alfabe Etkinliği", "Pazar"),
-        # 21:40 Antik Ejderha Kutbu → 21:30 duyuru
         (6, 21, 30, "🐉 Antik Ejderha Kutbu Etkinliği", "Pazar"),
-        # 22:00 Kayıp Alfabe → 21:50 duyuru
         (6, 21, 50, "📖 Kayıp Alfabe Etkinliği", "Pazar"),
-        # 22:30 Savaş Arenası → 22:20 duyuru
         (6, 22, 20, "🛡️ Savaş Arenası Etkinliği", "Pazar"),
     ]
     
@@ -267,7 +304,178 @@ async def load_system_events():
             await db.commit()
             print(f'✅ {len(events)} sistem etkinliği yüklendi!')
 
-# ==================== KOMUTLAR ====================
+# ==================== MÜZİK KOMUTLARI ====================
+
+@bot.command(name='çal', aliases=['play', 'p'])
+async def play(ctx, *, query):
+    """YouTube'dan müzik çal"""
+    
+    # Kullanıcı ses kanalında mı?
+    if not ctx.author.voice:
+        return await ctx.send("❌ Önce bir ses kanalına girin!")
+    
+    voice_channel = ctx.author.voice.channel
+    
+    # Bot zaten bir kanalda mı?
+    voice_client = ctx.guild.voice_client
+    if voice_client and voice_client.is_connected():
+        if voice_client.channel != voice_channel:
+            return await ctx.send("❌ Bot başka bir kanalda! Önce `!ayrıl` komutunu kullanın.")
+    else:
+        # Kanala bağlan
+        voice_client = await voice_channel.connect()
+    
+    # YouTube araması veya link
+    await ctx.send(f"🔍 Aranıyor: `{query}`")
+    song = await extract_info(query)
+    
+    if not song:
+        return await ctx.send("❌ Şarkı bulunamadı!")
+    
+    # Şarkı bilgisini güncelle
+    song.requester = ctx.author.mention
+    
+    # Sıraya ekle veya hemen çal
+    guild_id = ctx.guild.id
+    queue = get_queue(guild_id)
+    
+    if voice_client.is_playing():
+        queue.append(song)
+        embed = discord.Embed(
+            title="🎵 Sıraya Eklendi",
+            description=f"**{song.title}**",
+            color=0xFF0000
+        )
+        embed.add_field(name="Süre", value=song.format_duration(), inline=True)
+        embed.add_field(name="Sıra", value=str(len(queue)), inline=True)
+        embed.set_thumbnail(url=song.thumbnail)
+        embed.set_footer(text=f"İsteyen: {ctx.author.display_name}", icon_url=ctx.author.avatar.url if ctx.author.avatar else None)
+        await ctx.send(embed=embed)
+    else:
+        currently_playing[guild_id] = song
+        play_next_song(guild_id, voice_client)
+        
+        embed = discord.Embed(
+            title="▶️ Şimdi Çalıyor",
+            description=f"**{song.title}**",
+            color=0xFF0000
+        )
+        embed.add_field(name="Süre", value=song.format_duration(), inline=True)
+        embed.set_thumbnail(url=song.thumbnail)
+        embed.set_footer(text=f"İsteyen: {ctx.author.display_name}", icon_url=ctx.author.avatar.url if ctx.author.avatar else None)
+        await ctx.send(embed=embed)
+
+@bot.command(name='sıra', aliases=['queue', 'q'])
+async def show_queue(ctx):
+    """Çalma listesini göster"""
+    guild_id = ctx.guild.id
+    queue = get_queue(guild_id)
+    current = currently_playing.get(guild_id)
+    
+    embed = discord.Embed(title="🎵 Çalma Listesi", color=0x3498db)
+    
+    if current:
+        embed.add_field(
+            name="▶️ Şimdi Çalıyor",
+            value=f"**{current.title}** | {current.format_duration()} | {current.requester}",
+            inline=False
+        )
+    else:
+        embed.add_field(name="▶️ Şimdi Çalıyor", value="Şu an çalan yok", inline=False)
+    
+    if queue:
+        queue_text = ""
+        for i, song in enumerate(queue[:10], 1):
+            queue_text += f"`{i}.` {song.title} | {song.format_duration()}\n"
+        if len(queue) > 10:
+            queue_text += f"\n...ve {len(queue) - 10} şarkı daha"
+        embed.add_field(name="📋 Sıradaki Şarkılar", value=queue_text, inline=False)
+    else:
+        embed.add_field(name="📋 Sıradaki Şarkılar", value="Sıra boş", inline=False)
+    
+    await ctx.send(embed=embed)
+
+@bot.command(name='atla', aliases=['skip', 's'])
+async def skip(ctx):
+    """Şarkıyı atla"""
+    voice_client = ctx.guild.voice_client
+    
+    if not voice_client or not voice_client.is_playing():
+        return await ctx.send("❌ Şu an çalan şarkı yok!")
+    
+    voice_client.stop()
+    await ctx.send("⏭️ Şarkı atlandı!")
+
+@bot.command(name='dur', aliases=['pause'])
+async def pause(ctx):
+    """Müziği duraklat"""
+    voice_client = ctx.guild.voice_client
+    
+    if not voice_client or not voice_client.is_playing():
+        return await ctx.send("❌ Şu an çalan şarkı yok!")
+    
+    voice_client.pause()
+    await ctx.send("⏸️ Müzik duraklatıldı!")
+
+@bot.command(name='devam', aliases=['resume'])
+async def resume(ctx):
+    """Müziği devam ettir"""
+    voice_client = ctx.guild.voice_client
+    
+    if not voice_client or not voice_client.is_paused():
+        return await ctx.send("❌ Duraklatılmış müzik yok!")
+    
+    voice_client.resume()
+    await ctx.send("▶️ Müzik devam ediyor!")
+
+@bot.command(name='ayrıl', aliases=['leave', 'disconnect', 'dc'])
+async def leave(ctx):
+    """Ses kanalından ayrıl"""
+    voice_client = ctx.guild.voice_client
+    
+    if not voice_client or not voice_client.is_connected():
+        return await ctx.send("❌ Bot bir kanalda değil!")
+    
+    # Sırayı temizle
+    guild_id = ctx.guild.id
+    music_queues.pop(guild_id, None)
+    currently_playing.pop(guild_id, None)
+    
+    await voice_client.disconnect()
+    await ctx.send("👋 Görüşürüz!")
+
+@bot.command(name='temizle', aliases=['clear'])
+async def clear_queue(ctx):
+    """Çalma listesini temizle"""
+    guild_id = ctx.guild.id
+    
+    if guild_id in music_queues:
+        music_queues[guild_id] = []
+        await ctx.send("🗑️ Çalma listesi temizlendi!")
+    else:
+        await ctx.send("❌ Çalma listesi zaten boş!")
+
+@bot.command(name='şarkı', aliases=['np', 'nowplaying'])
+async def now_playing(ctx):
+    """Şu an çalan şarkıyı göster"""
+    guild_id = ctx.guild.id
+    current = currently_playing.get(guild_id)
+    
+    if not current:
+        return await ctx.send("❌ Şu an çalan şarkı yok!")
+    
+    embed = discord.Embed(
+        title="▶️ Şimdi Çalıyor",
+        description=f"**[{current.title}]({current.webpage_url})**",
+        color=0xFF0000
+    )
+    embed.add_field(name="Süre", value=current.format_duration(), inline=True)
+    embed.add_field(name="İsteyen", value=current.requester, inline=True)
+    embed.set_thumbnail(url=current.thumbnail)
+    
+    await ctx.send(embed=embed)
+
+# ==================== DUYURU KOMUTLARI ====================
 
 @bot.command()
 @commands.has_permissions(administrator=True)
@@ -430,10 +638,83 @@ async def duyuru(ctx, kanal: discord.TextChannel, *, mesaj):
 @bot.command()
 async def yardim(ctx):
     embed = discord.Embed(title='🤖 YIKILMAZ BOT - KOMUTLAR', color=0x3498db)
+    
+    # Müzik komutları
+    embed.add_field(
+        name='🎵 Müzik',
+        value='`!çal <şarkı/link>` - YouTube\'dan müzik çal\n'
+              '`!sıra` - Çalma listesi\n'
+              '`!atla` - Şarkıyı atla\n'
+              '`!dur` - Duraklat\n'
+              '`!devam` - Devam ettir\n'
+              '`!şarkı` - Şu an çalan\n'
+              '`!temizle` - Sırayı temizle\n'
+              '`!ayrıl` - Kanaldan ayrıl',
+        inline=False
+    )
+    
     embed.add_field(name='📅 Haftalık', value='`!haftalik_duyuru Gün HH:MM #kanal mesaj`\n`!haftalik_liste` | `!haftalik_sil ID`', inline=False)
     embed.add_field(name='🔄 Günlük', value='`!gunluk_duyuru HH:MM #kanal mesaj`\n`!gunluk_liste` | `!gunluk_sil ID`', inline=False)
     embed.add_field(name='📆 Tarihli', value='`!tarihli_duyuru GG.AA.YYYY HH:MM #kanal mesaj`\n`!tarihli_liste` | `!tarihli_sil ID`', inline=False)
     embed.add_field(name='📢 Anlık', value='`!duyuru #kanal mesaj`', inline=False)
+    await ctx.send(embed=embed)
+
+# ==================== KONTROL SİSTEMİ ====================
+
+@tasks.loop(minutes=1)
+async def check_all_announcements():
+    now = datetime.now(TR_TZ)  # Türkiye saati
+    current_time = time(now.hour, now.minute)
+    current_weekday = now.weekday()
+    today_str = now.strftime('%Y-%m-%d')
+    
+    async with aiosqlite.connect(DB_PATH) as db:
+        # Günlük duyurular
+        cursor = await db.execute('SELECT channel_id, message FROM daily WHERE hour = ? AND minute = ?', 
+                                    (current_time.hour, current_time.minute))
+        for row in await cursor.fetchall():
+            await send_msg(row[0], row[1])
+        
+        # Haftalık duyurular
+        cursor = await db.execute('SELECT channel_id, message FROM weekly WHERE day = ? AND hour = ? AND minute = ?',
+                                    (current_weekday, current_time.hour, current_time.minute))
+        for row in await cursor.fetchall():
+            await send_msg(row[0], row[1])
+        
+        # Tarihli duyurular
+        cursor = await db.execute('SELECT id, channel_id, message FROM scheduled WHERE date = ? AND hour = ? AND minute = ? AND sent = 0',
+                                    (today_str, current_time.hour, current_time.minute))
+        rows = await cursor.fetchall()
+        for id, ch_id, msg in rows:
+            await send_msg(ch_id, msg)
+            await db.execute('UPDATE scheduled SET sent = 1 WHERE id = ?', (id,))
+        
+        await db.commit()
+
+async def send_msg(channel_id, message):
+    try:
+        channel = bot.get_channel(channel_id)
+        if channel:
+            await channel.send(message)
+            print(f'✅ Duyuru gönderildi: {message[:50]}...')
+    except Exception as e:
+        print(f'❌ Gönderim hatası: {e}')
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send('❌ Yetkin yok!')
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send(f'❌ Eksik parametre! Kullanım: `!{ctx.command.name}`')
+    else:
+        print(f'Hata: {error}')
+
+TOKEN = os.getenv('DISCORD_TOKEN')
+if not TOKEN:
+    raise ValueError("DISCORD_TOKEN bulunamadı! Railway Variables'a ekleyin.")
+
+bot.run(TOKEN)
+=False)
     await ctx.send(embed=embed)
 
 # ==================== KONTROL SİSTEMİ ====================
