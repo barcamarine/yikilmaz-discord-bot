@@ -1,11 +1,8 @@
 import discord
 from discord.ext import commands, tasks
-from discord import app_commands
 import os
 import aiosqlite
 import pytz
-import random
-import asyncio
 from datetime import datetime, time
 from dotenv import load_dotenv
 
@@ -34,7 +31,6 @@ TURKCE_GUNLER = {
 async def on_ready():
     await init_db()
     await load_system_events()
-    bot.loop.create_task(bot.tree.sync())
     check_all_announcements.start()
     print(f'✅ {bot.user} olarak giriş yapıldı!')
     print(f'📊 {len(bot.guilds)} sunucuda aktif!')
@@ -42,13 +38,6 @@ async def on_ready():
 
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
-        # Coin sistemi
-        await db.execute('''
-            CREATE TABLE IF NOT EXISTS coins (
-                user_id INTEGER PRIMARY KEY,
-                coin INTEGER DEFAULT 0
-            )
-        ''')
         # Günlük duyurular
         await db.execute('''
             CREATE TABLE IF NOT EXISTS daily (
@@ -91,21 +80,7 @@ async def init_db():
             )
         ''')
         await db.commit()
-async def get_coin(user_id):
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute('SELECT coin FROM coins WHERE user_id = ?', (user_id,))
-        row = await cursor.fetchone()
-        return row[0] if row else 0
 
-async def add_coin(user_id, amount):
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute('''
-            INSERT INTO coins (user_id, coin)
-            VALUES (?, ?)
-            ON CONFLICT(user_id)
-            DO UPDATE SET coin = coin + ?
-        ''', (user_id, amount, amount))
-        await db.commit()
 async def load_system_events():
     """Otomatik etkinlikleri yükle (sadece bir kere)"""
     events = [
@@ -202,128 +177,6 @@ async def load_system_events():
             print(f'✅ {len(events)} sistem etkinliği yüklendi!')
 
 # ==================== KOMUTLAR ====================
-@bot.command()
-async def zarvs(ctx, rakip: discord.Member):
-    sen = random.randint(1, 100)
-    o = random.randint(1, 100)
-    
-    if rakip.bot:
-        return await ctx.send("🤖 Botla kapışılmaz kral 😄")
-
-    if rakip == ctx.author:
-        return await ctx.send("😂 Kendi kendine mi kapışacan deli")
-
-    if sen > o:
-        kazanan = ctx.author
-        kaybeden = rakip
-
-        await add_coin(ctx.author.id, 10)
-        await add_coin(rakip.id, -10)
-
-        sonuc = f"🏆 {ctx.author.mention} kazandı! (+10 💰)\n💀 {rakip.mention} kaybetti! (-10 💰)"
-
-    elif o > sen:
-        kazanan = rakip
-        kaybeden = ctx.author
-
-        await add_coin(rakip.id, 10)
-        await add_coin(ctx.author.id, -10)
-
-        sonuc = f"🏆 {rakip.mention} kazandı! (+10 💰)\n💀 {ctx.author.mention} kaybetti! (-10 💰)"
-
-    else:
-        return await ctx.send(f"🤝 {ctx.author.mention} vs {rakip.mention}\nİkiniz de **{sen}** attınız 😂 Berabere!")
-
-    # 🔥 AĞIR AMA EĞLENCELİ LAFLAR
-    laflar = [
-        "Al kendini git burdan ",
-        "Kardeşim şurdan bana touch blue al",
-        "Acıma yetime döner yada lahmacun anladın sen",
-        "Ayağınlamı atıyon zarı",
-        "Yürek yiyip mi geldin kaybol",
-        "Paket oldun bilader kurye gelip alıcak seni 😂",
-        "Ah be! YIKILMAZ Abimde olan şanstan sende olsa dünyaya gelmezdin 😂",
-        "Sana bi el bide parmak lazım kankam",
-        "Rezil oldun ama sorun yok, alışkınsındır 😂",
-        "Aşıksan git konuş bence burda zaman kaybısın bilader 😂",
-        "Birdahakine rakip seçerken 10 kere düşün 1-2 kere yetmiyor demek ki sana 😂 "
-    ]
-    laf = random.choice(laflar)
-    embed = discord.Embed(
-        title="⚔️ ZAR DÜELLOSU",
-        color=0xe67e22
-    )
-
-    embed.add_field(name=ctx.author.display_name, value=f"🎲 {sen}", inline=True)
-    embed.add_field(name=rakip.display_name, value=f"🎲 {o}", inline=True)
-    embed.add_field(name="🏁 Sonuç", value=sonuc, inline=False)
-    kazanan_coin = await get_coin(kazanan.id)
-    kaybeden_coin = await get_coin(kaybeden.id)
-
-    embed.add_field(
-        name="💰 Coin Durumu",
-        value=f"{kazanan.display_name}: {kazanan_coin}\n{kaybeden.display_name}: {kaybeden_coin}",
-        inline=False
-)
-    embed.add_field(name="💬 Yorum", value=f"{kaybeden.mention} {laf}", inline=False)
-    await ctx.send(embed=embed)
-    
-@bot.command()
-async def coin(ctx):
-        coin = await get_coin(ctx.author.id)
-        await ctx.send(f"💰 {ctx.author.display_name} coinin: {coin}")
-    
-@bot.command()
-async def topcoin(ctx):
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute('SELECT user_id, coin FROM coins ORDER BY coin DESC LIMIT 10')
-        rows = await cursor.fetchall()
-
-    if not rows:
-        return await ctx.send("❌ Daha kimse coin kazanmamış!")
-
-    text = "🏆 **EN ZENGİNLER** 🏆\n\n"
-
-    for i, (user_id, coin) in enumerate(rows, start=1):
-        user = bot.get_user(user_id)
-        name = user.display_name if user else f"ID:{user_id}"
-        text += f"{i}. {name} - {coin} 💰\n"
-
-    await ctx.send(text)
-    
-@bot.command()    
-async def gir(ctx):
-    if ctx.author.voice:
-        channel = ctx.author.voice.channel
-
-        if ctx.voice_client:
-            await ctx.voice_client.move_to(channel)
-        else:
-            await channel.connect()
-
-        await ctx.send(f"🔊 {channel} kanalına girdim!")
-    else:
-        await ctx.send("❌ Önce bir ses kanalına gir!")
-
-@bot.command()
-async def zar(ctx):
-    sayi = random.randint(1, 100)
-
-    embed = discord.Embed(
-        title="🎲 ZAR SONUCU",
-        description=f"{ctx.author.mention} zar attı!",
-        color=0x3498db
-    )
-
-    embed.add_field(name="🎯 Sonuç", value=f"**{sayi}**", inline=False)
-
-    await ctx.send(embed=embed)
-
-@bot.tree.command(name="ping", description="Bot çalışıyor mu kontrol eder")
-async def ping(interaction: discord.Interaction):
-    await interaction.response.defer()  # hemen cevap ver (timeout engeller)
-    await asyncio.sleep(1)  # küçük gecikme (Railway fix)
-    await interaction.followup.send(f"{interaction.user.mention} 7/24 Nöbetteyim Komutanım! :saluting_face: ")
 
 @bot.command()
 @commands.has_permissions(administrator=True)
@@ -397,6 +250,7 @@ async def haftalik_sil(ctx, id: int):
 @bot.command(name='haftalik_liste')
 async def haftalik_liste(ctx):
     embed = discord.Embed(title='📅 HAFTALIK DUYURULAR', color=0x3498db)
+    
     async with aiosqlite.connect(DB_PATH) as db:
         # Sistem etkinlikleri
         cursor = await db.execute('SELECT day_name, hour, minute, message FROM weekly WHERE is_system = 1 ORDER BY day, hour, minute')
