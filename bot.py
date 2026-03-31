@@ -4,6 +4,7 @@ from discord import app_commands
 import os
 import aiosqlite
 import pytz
+import random
 from datetime import datetime, time
 from dotenv import load_dotenv
 
@@ -179,6 +180,114 @@ async def load_system_events():
             print(f'✅ {len(events)} sistem etkinliği yüklendi!')
 
 # ==================== KOMUTLAR ====================
+@bot.command()
+async def zarvs(ctx, rakip: discord.Member):
+    import random
+
+    if rakip.bot:
+        return await ctx.send("🤖 Botla kapışılmaz kral 😄")
+
+    if rakip == ctx.author:
+        return await ctx.send("😂 Kendi kendine mi kapışacan deli")
+
+    sen = random.randint(1, 100)
+    o = random.randint(1, 100)
+
+    if sen > o:
+        kazanan = ctx.author
+        kaybeden = rakip
+        sonuc = f"🏆 {ctx.author.mention} kazandı!\n💀 {rakip.mention} kaybetti!"
+    elif o > sen:
+        kazanan = rakip
+        kaybeden = ctx.author
+        sonuc = f"🏆 {rakip.mention} kazandı!\n💀 {ctx.author.mention} kaybetti!"
+    else:
+        return await ctx.send(f"🤝 {ctx.author.mention} vs {rakip.mention}\nİkiniz de **{sen}** attınız 😂 Berabere!")
+
+    # 🔥 AĞIR AMA EĞLENCELİ LAFLAR
+    laflar = [
+        "Al kendini git burdan ",
+        "Kardeşim şurdan bana touch blue al",
+        "Acıma yetime döner yada lahmacun anladın sen",
+        "Ayağınlamı atıyon zarı",
+        "Yürek yiyip mi geldin kaybol",
+        "Paket oldun bilader kurye gelip alıcak seni 😂",
+        "Ah be! YIKILMAZ Abimde olan şanstan sende olsa dünyaya gelmezdin 😂",
+        "Sana bi el bide parmak lazım kankam",
+        "Rezil oldun ama sorun yok, alışkınsındır 😂"
+        "Aşıksan git konuş bence burda zaman kaybısın bilader 😂"
+        "Birdahakine rakip seçerken 10 kere düşün 1-2 kere yetmiyor demek ki sana 😂 "
+    ]
+
+    import random
+    laf = random.choice(laflar)
+
+    embed = discord.Embed(
+        title="⚔️ ZAR DÜELLOSU",
+        color=0xe67e22
+    )
+
+    embed.add_field(
+        name=f"{ctx.author.display_name}",
+        value=f"🎲 {sen}",
+        inline=True
+    )
+
+    embed.add_field(
+        name=f"{rakip.display_name}",
+        value=f"🎲 {o}",
+        inline=True
+    )
+
+    embed.add_field(name="🏁 Sonuç", value=sonuc, inline=False)
+    embed.add_field(name="💬 Yorum", value=f"{kaybeden.mention} {laf}", inline=False)
+
+    await ctx.send(embed=embed)
+
+    embed = discord.Embed(
+        title="⚔️ ZAR DÜELLOSU",
+        color=0xe67e22
+    )
+
+    embed.add_field(name=f"{ctx.author.display_name}", value=f"🎲 {sen}", inline=True)
+    embed.add_field(name=f"{rakip.display_name}", value=f"🎲 {o}", inline=True)
+    embed.add_field(name="Sonuç", value=sonuc, inline=False)
+
+    await ctx.send(embed=embed)
+@bot.command()
+async def zar(ctx):
+    sayi = random.randint(1, 100)
+
+    if sayi == 100:
+        mesaj = "💎 JACKPOT! EFSANE ATTIN!"
+        renk = 0xf1c40f
+    elif sayi >= 90:
+        mesaj = "🔥 KRİTİK! Çok iyi attın!"
+        renk = 0xe74c3c
+    elif sayi >= 70:
+        mesaj = "😎 İyi attın!"
+        renk = 0x2ecc71
+    elif sayi >= 40:
+        mesaj = "🙂 Fena değil"
+        renk = 0x3498db
+    elif sayi >= 10:
+        mesaj = "😐 Kötü sayılmaz..."
+        renk = 0x95a5a6
+    else:
+        mesaj = "💀 ÇÖP ATTIN!"
+        renk = 0x000000
+
+    embed = discord.Embed(
+        title="🎲 ZAR SONUCU",
+        description=f"{ctx.author.mention} zar attı!",
+        color=renk
+    )
+
+    embed.add_field(name="🎯 Sonuç", value=f"**{sayi}**", inline=False)
+    embed.add_field(name="📢 Durum", value=mesaj, inline=False)
+
+    await ctx.send(embed=embed)
+    
 @bot.tree.command(name="ping", description="Bot çalışıyor mu kontrol eder")
 async def ping(interaction: discord.Interaction):
     await interaction.response.defer()  # hemen cevap ver (timeout engeller)
