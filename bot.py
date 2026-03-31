@@ -5,6 +5,7 @@ import os
 import aiosqlite
 import pytz
 import random
+import asyncio
 from datetime import datetime, time
 from dotenv import load_dotenv
 
@@ -182,7 +183,6 @@ async def load_system_events():
 # ==================== KOMUTLAR ====================
 @bot.command()
 async def zarvs(ctx, rakip: discord.Member):
-    import random
 
     if rakip.bot:
         return await ctx.send("🤖 Botla kapışılmaz kral 😄")
@@ -214,84 +214,54 @@ async def zarvs(ctx, rakip: discord.Member):
         "Paket oldun bilader kurye gelip alıcak seni 😂",
         "Ah be! YIKILMAZ Abimde olan şanstan sende olsa dünyaya gelmezdin 😂",
         "Sana bi el bide parmak lazım kankam",
-        "Rezil oldun ama sorun yok, alışkınsındır 😂"
-        "Aşıksan git konuş bence burda zaman kaybısın bilader 😂"
+        "Rezil oldun ama sorun yok, alışkınsındır 😂",
+        "Aşıksan git konuş bence burda zaman kaybısın bilader 😂",
         "Birdahakine rakip seçerken 10 kere düşün 1-2 kere yetmiyor demek ki sana 😂 "
     ]
-
-    import random
     laf = random.choice(laflar)
-
     embed = discord.Embed(
         title="⚔️ ZAR DÜELLOSU",
         color=0xe67e22
     )
 
-    embed.add_field(
-        name=f"{ctx.author.display_name}",
-        value=f"🎲 {sen}",
-        inline=True
-    )
-
-    embed.add_field(
-        name=f"{rakip.display_name}",
-        value=f"🎲 {o}",
-        inline=True
-    )
-
+    embed.add_field(name=ctx.author.display_name, value=f"🎲 {sen}", inline=True)
+    embed.add_field(name=rakip.display_name, value=f"🎲 {o}", inline=True)
     embed.add_field(name="🏁 Sonuç", value=sonuc, inline=False)
     embed.add_field(name="💬 Yorum", value=f"{kaybeden.mention} {laf}", inline=False)
 
     await ctx.send(embed=embed)
+    
+@bot.command()
+async def gir(ctx):
+    if ctx.author.voice:
+        channel = ctx.author.voice.channel
 
-    embed = discord.Embed(
-        title="⚔️ ZAR DÜELLOSU",
-        color=0xe67e22
-    )
+        if ctx.voice_client:
+            await ctx.voice_client.move_to(channel)
+        else:
+            await channel.connect()
 
-    embed.add_field(name=f"{ctx.author.display_name}", value=f"🎲 {sen}", inline=True)
-    embed.add_field(name=f"{rakip.display_name}", value=f"🎲 {o}", inline=True)
-    embed.add_field(name="Sonuç", value=sonuc, inline=False)
+        await ctx.send(f"🔊 {channel} kanalına girdim!")
+    else:
+        await ctx.send("❌ Önce bir ses kanalına gir!")
 
-    await ctx.send(embed=embed)
 @bot.command()
 async def zar(ctx):
     sayi = random.randint(1, 100)
 
-    if sayi == 100:
-        mesaj = "💎 JACKPOT! EFSANE ATTIN!"
-        renk = 0xf1c40f
-    elif sayi >= 90:
-        mesaj = "🔥 KRİTİK! Çok iyi attın!"
-        renk = 0xe74c3c
-    elif sayi >= 70:
-        mesaj = "😎 İyi attın!"
-        renk = 0x2ecc71
-    elif sayi >= 40:
-        mesaj = "🙂 Fena değil"
-        renk = 0x3498db
-    elif sayi >= 10:
-        mesaj = "😐 Kötü sayılmaz..."
-        renk = 0x95a5a6
-    else:
-        mesaj = "💀 ÇÖP ATTIN!"
-        renk = 0x000000
-
     embed = discord.Embed(
         title="🎲 ZAR SONUCU",
         description=f"{ctx.author.mention} zar attı!",
-        color=renk
+        color=0x3498db
     )
 
     embed.add_field(name="🎯 Sonuç", value=f"**{sayi}**", inline=False)
-    embed.add_field(name="📢 Durum", value=mesaj, inline=False)
 
     await ctx.send(embed=embed)
-    
+
 @bot.tree.command(name="ping", description="Bot çalışıyor mu kontrol eder")
 async def ping(interaction: discord.Interaction):
     await interaction.response.defer()  # hemen cevap ver (timeout engeller)
-    import asyncio
     await asyncio.sleep(1)  # küçük gecikme (Railway fix)
     await interaction.followup.send(f"{interaction.user.mention} 7/24 Nöbetteyim Komutanım! :saluting_face: ")
 
@@ -367,7 +337,6 @@ async def haftalik_sil(ctx, id: int):
 @bot.command(name='haftalik_liste')
 async def haftalik_liste(ctx):
     embed = discord.Embed(title='📅 HAFTALIK DUYURULAR', color=0x3498db)
-    
     async with aiosqlite.connect(DB_PATH) as db:
         # Sistem etkinlikleri
         cursor = await db.execute('SELECT day_name, hour, minute, message FROM weekly WHERE is_system = 1 ORDER BY day, hour, minute')
