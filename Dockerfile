@@ -5,6 +5,6 @@ RUN apt update && apt install -y ffmpeg
 WORKDIR /app
 COPY . .
 
-RUN pip install -r gereksinimler.txt
+RUN pip install -r requirements.txt
 
 CMD ["python", "bot.py"]
