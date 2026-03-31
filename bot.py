@@ -181,10 +181,12 @@ async def load_system_events():
 # ==================== KOMUTLAR ====================
    @bot.tree.command(name="ping", description="Bot çalışıyor mu kontrol eder")
 async def ping(interaction: discord.Interaction):
-    try:
-        await interaction.response.send_message("Pong!", ephemeral=True)
-    except:
-        await interaction.followup.send("Pong!", ephemeral=True)
+    await interaction.response.defer()  # hemen cevap ver (timeout engeller)
+    
+    import asyncio
+    await asyncio.sleep(1)  # küçük gecikme (Railway fix)
+
+    await interaction.followup.send("Pong!")
 
 @bot.command()
 @commands.has_permissions(administrator=True)
