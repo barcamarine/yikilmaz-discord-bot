@@ -2,3 +2,6 @@ discord.py>=2.3.0
 aiosqlite
 python-dotenv
 pytz
+yt-dlp
+PyNaCl
+ffmpeg-python
