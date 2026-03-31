@@ -82,84 +82,175 @@ async def init_db():
         await db.commit()
 
 async def load_system_events():
-    """Otomatik etkinlikleri yükle (sadece bir kere)"""
+    """Görseldeki etkinlik saatlerine göre 10 dk önce duyuru"""
+    
+    # Her etkinlik (day, hour, minute, message, day_name)
+    # 10 dk önce duyuru için etkinlik saatinden 10 dk çıkarıyoruz
+    
     events = [
-        # (day, hour, minute, message, day_name)
-        (0, 10, 50, "📖 Kayıp Alfabe", "Pazartesi"),
-        (0, 11, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
-        (0, 12, 50, "🔥 Kusursuz Cehennem & 🌐 Sanal Evren", "Pazartesi"),
-        (0, 15, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
-        (0, 16, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
-        (0, 17, 50, "⚔️ Düello Turnuvası (Savaşçı)", "Pazartesi"),
-        (0, 18, 30, "🐉 Antik Ejderha Kutbu", "Pazartesi"),
-        (0, 18, 50, "🌐 Sanal Evren", "Pazartesi"),
-        (0, 19, 20, "🛡️ Savaş Arenası", "Pazartesi"),
-        (0, 20, 5, "⚔️ Grup Düello Turnuvası", "Pazartesi"),
-        (0, 21, 50, "📖 Kayıp Alfabe", "Pazartesi"),
-        (1, 9, 50, "🟢 Yeşil Vadi", "Salı"),
-        (1, 10, 50, "🟢 Yeşil Vadi", "Salı"),
-        (1, 11, 50, "📖 Kayıp Alfabe", "Salı"),
-        (1, 12, 50, "🌐 Sanal Evren", "Salı"),
-        (1, 15, 50, "🟢 Yeşil Vadi", "Salı"),
-        (1, 16, 50, "🟢 Yeşil Vadi", "Salı"),
-        (1, 17, 50, "⚔️ Düello Turnuvası (Ninja)", "Salı"),
-        (1, 18, 50, "🌐 Sanal Evren", "Salı"),
-        (1, 19, 20, "🛡️ Savaş Arenası", "Salı"),
-        (1, 20, 5, "⚔️ Grup Düello Turnuvası", "Salı"),
-        (2, 9, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
-        (2, 10, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
-        (2, 11, 50, "🌐 Sanal Evren", "Çarşamba"),
-        (2, 15, 50, "📖 Kayıp Alfabe", "Çarşamba"),
-        (2, 16, 50, "📖 Kayıp Alfabe", "Çarşamba"),
-        (2, 17, 50, "⚔️ Düello Turnuvası (Sura)", "Çarşamba"),
-        (2, 18, 30, "🐉 Antik Ejderha Kutbu", "Çarşamba"),
-        (2, 18, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
-        (2, 19, 20, "👑 Üç İmparatorluk Savaşı", "Çarşamba"),
-        (2, 21, 50, "📖 Kayıp Alfabe", "Çarşamba"),
-        (3, 10, 50, "📖 Kayıp Alfabe", "Perşembe"),
-        (3, 11, 50, "🟢 Yeşil Vadi", "Perşembe"),
-        (3, 12, 50, "🟢 Yeşil Vadi", "Perşembe"),
-        (3, 13, 50, "🌐 Sanal Evren", "Perşembe"),
-        (3, 15, 50, "📖 Kayıp Alfabe", "Perşembe"),
-        (3, 16, 50, "🟢 Yeşil Vadi", "Perşembe"),
-        (3, 17, 50, "⚔️ Düello Turnuvası (Şaman)", "Perşembe"),
-        (3, 18, 50, "🟢 Yeşil Vadi", "Perşembe"),
-        (3, 19, 20, "🛡️ Savaş Arenası", "Perşembe"),
-        (4, 9, 50, "📖 Kayıp Alfabe", "Cuma"),
-        (4, 10, 50, "🔥 Kusursuz Cehennem", "Cuma"),
-        (4, 11, 50, "🔥 Kusursuz Cehennem & 🌐 Sanal Evren", "Cuma"),
-        (4, 15, 50, "🔥 Kusursuz Cehennem", "Cuma"),
-        (4, 16, 50, "⚔️ Düello Turnuvası (Genel)", "Cuma"),
-        (4, 17, 50, "🔥 Kusursuz Cehennem", "Cuma"),
-        (4, 18, 30, "🐉 Antik Ejderha Kutbu", "Cuma"),
-        (4, 19, 0, "🛡️ Savaş Arenası", "Cuma"),
-        (4, 19, 20, "🌐 Sanal Evren", "Cuma"),
-        (4, 20, 5, "⚔️ Grup Düello Turnuvası", "Cuma"),
-        (5, 9, 50, "📖 Kayıp Alfabe", "Cumartesi"),
-        (5, 10, 50, "📖 Kayıp Alfabe", "Cumartesi"),
-        (5, 11, 50, "🟢 Yeşil Vadi", "Cumartesi"),
-        (5, 12, 50, "🟢 Yeşil Vadi", "Cumartesi"),
-        (5, 13, 50, "🌐 Sanal Evren", "Cumartesi"),
-        (5, 15, 50, "📖 Kayıp Alfabe", "Cumartesi"),
-        (5, 16, 50, "📖 Kayıp Alfabe", "Cumartesi"),
-        (5, 17, 50, "🟢 Yeşil Vadi", "Cumartesi"),
-        (5, 18, 30, "🐉 Antik Ejderha Kutbu", "Cumartesi"),
-        (5, 18, 50, "🟢 Yeşil Vadi", "Cumartesi"),
-        (5, 19, 20, "👑 Üç İmparatorluk Savaşı", "Cumartesi"),
-        (5, 19, 50, "🌐 Sanal Evren", "Cumartesi"),
-        (5, 22, 50, "🔥 Kusursuz Cehennem", "Cumartesi"),
-        (6, 9, 50, "🟢 Yeşil Vadi", "Pazar"),
-        (6, 10, 50, "🟢 Yeşil Vadi", "Pazar"),
-        (6, 11, 50, "📖 Kayıp Alfabe", "Pazar"),
-        (6, 12, 50, "📖 Kayıp Alfabe", "Pazar"),
-        (6, 13, 50, "🌐 Sanal Evren", "Pazar"),
-        (6, 14, 50, "🌐 Sanal Evren", "Pazar"),
-        (6, 15, 50, "🟢 Yeşil Vadi", "Pazar"),
-        (6, 16, 50, "🟢 Yeşil Vadi", "Pazar"),
-        (6, 17, 50, "📖 Kayıp Alfabe", "Pazar"),
-        (6, 18, 30, "🐉 Antik Ejderha Kutbu", "Pazar"),
-        (6, 18, 50, "📖 Kayıp Alfabe", "Pazar"),
-        (6, 19, 20, "🛡️ Savaş Arenası", "Pazar"),
+        # ========== PAZARTESİ ==========
+        # 14:00 Kayıp Alfabe → 13:50 duyuru
+        (0, 13, 50, "📖 Kayıp Alfabe Etkinliği", "Pazartesi"),
+        # 15:00 Kusursuz Cehennem → 14:50 duyuru
+        (0, 14, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
+        # 16:00 Kusursuz Cehennem & Sanal Evren → 15:50 duyuru
+        (0, 15, 50, "🔥 Kusursuz Cehennem & 🌐 Sanal Evren Etkinliği", "Pazartesi"),
+        # 19:00 Kusursuz Cehennem → 18:50 duyuru
+        (0, 18, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
+        # 20:00 Kusursuz Cehennem → 19:50 duyuru
+        (0, 19, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
+        # 21:00 Düello Turnuvası (Savaşçı) → 20:50 duyuru
+        (0, 20, 50, "⚔️ Düello Turnuvası (Savaşçı)", "Pazartesi"),
+        # 21:40 Antik Ejderha Kutbu → 21:30 duyuru
+        (0, 21, 30, "🐉 Antik Ejderha Kutbu Etkinliği", "Pazartesi"),
+        # 22:00 Sanal Evren → 21:50 duyuru
+        (0, 21, 50, "🌐 Sanal Evren Etkinliği", "Pazartesi"),
+        # 22:30 Savaş Arenası → 22:20 duyuru
+        (0, 22, 20, "🛡️ Savaş Arenası Etkinliği", "Pazartesi"),
+        # 23:15 Jotun Etkinliği → 23:05 duyuru
+        (0, 23, 5, "❄️ Jotun Etkinliği", "Pazartesi"),
+        # 01:00 (ertesi gün) Kayıp Alfabe → 00:50 duyuru
+        (0, 0, 50, "📖 Kayıp Alfabe Etkinliği", "Pazartesi"),
+        
+        # ========== SALI ==========
+        # 13:00 Yeşil Vadi → 12:50 duyuru
+        (1, 12, 50, "🟢 Yeşil Vadi Etkinliği", "Salı"),
+        # 14:00 Yeşil Vadi → 13:50 duyuru
+        (1, 13, 50, "🟢 Yeşil Vadi Etkinliği", "Salı"),
+        # 15:00 Kayıp Alfabe → 14:50 duyuru
+        (1, 14, 50, "📖 Kayıp Alfabe Etkinliği", "Salı"),
+        # 16:00 Sanal Evren → 15:50 duyuru
+        (1, 15, 50, "🌐 Sanal Evren Etkinliği", "Salı"),
+        # 19:00 Yeşil Vadi → 18:50 duyuru
+        (1, 18, 50, "🟢 Yeşil Vadi Etkinliği", "Salı"),
+        # 20:00 Yeşil Vadi → 19:50 duyuru
+        (1, 19, 50, "🟢 Yeşil Vadi Etkinliği", "Salı"),
+        # 21:00 Düello Turnuvası (Ninja) → 20:50 duyuru
+        (1, 20, 50, "⚔️ Düello Turnuvası (Ninja)", "Salı"),
+        # 22:00 Sanal Evren → 21:50 duyuru
+        (1, 21, 50, "🌐 Sanal Evren Etkinliği", "Salı"),
+        # 22:30 Savaş Arenası → 22:20 duyuru
+        (1, 22, 20, "🛡️ Savaş Arenası Etkinliği", "Salı"),
+        # 23:15 Grup Düello Turnuvası → 23:05 duyuru
+        (1, 23, 5, "⚔️ Grup Düello Turnuvası", "Salı"),
+        
+        # ========== ÇARŞAMBA ==========
+        # 13:00 Kusursuz Cehennem → 12:50 duyuru
+        (2, 12, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
+        # 14:00 Kusursuz Cehennem → 13:50 duyuru
+        (2, 13, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
+        # 15:00 Sanal Evren → 14:50 duyuru
+        (2, 14, 50, "🌐 Sanal Evren Etkinliği", "Çarşamba"),
+        # 18:00 Kayıp Alfabe → 17:50 duyuru
+        (2, 17, 50, "📖 Kayıp Alfabe Etkinliği", "Çarşamba"),
+        # 19:00 Kayıp Alfabe → 18:50 duyuru
+        (2, 18, 50, "📖 Kayıp Alfabe Etkinliği", "Çarşamba"),
+        # 21:00 Düello Turnuvası (Sura) → 20:50 duyuru
+        (2, 20, 50, "⚔️ Düello Turnuvası (Sura)", "Çarşamba"),
+        # 21:40 Antik Ejderha Kutbu → 21:30 duyuru
+        (2, 21, 30, "🐉 Antik Ejderha Kutbu Etkinliği", "Çarşamba"),
+        # 22:00 Kusursuz Cehennem → 21:50 duyuru
+        (2, 21, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
+        # 22:30 Üç İmparatorluk Savaşı → 22:20 duyuru
+        (2, 22, 20, "👑 Üç İmparatorluk Savaşı Etkinliği", "Çarşamba"),
+        # 01:00 (ertesi gün) Kayıp Alfabe → 00:50 duyuru
+        (2, 0, 50, "📖 Kayıp Alfabe Etkinliği", "Çarşamba"),
+        
+        # ========== PERŞEMBE ==========
+        # 14:00 Kayıp Alfabe → 13:50 duyuru
+        (3, 13, 50, "📖 Kayıp Alfabe Etkinliği", "Perşembe"),
+        # 15:00 Yeşil Vadi → 14:50 duyuru
+        (3, 14, 50, "🟢 Yeşil Vadi Etkinliği", "Perşembe"),
+        # 16:00 Yeşil Vadi → 15:50 duyuru
+        (3, 15, 50, "🟢 Yeşil Vadi Etkinliği", "Perşembe"),
+        # 17:00 Sanal Evren → 16:50 duyuru
+        (3, 16, 50, "🌐 Sanal Evren Etkinliği", "Perşembe"),
+        # 18:00 Kayıp Alfabe → 17:50 duyuru
+        (3, 17, 50, "📖 Kayıp Alfabe Etkinliği", "Perşembe"),
+        # 19:00 Yeşil Vadi → 18:50 duyuru
+        (3, 18, 50, "🟢 Yeşil Vadi Etkinliği", "Perşembe"),
+        # 21:00 Düello Turnuvası (Şaman) → 20:50 duyuru
+        (3, 20, 50, "⚔️ Düello Turnuvası (Şaman)", "Perşembe"),
+        # 22:00 Yeşil Vadi → 21:50 duyuru
+        (3, 21, 50, "🟢 Yeşil Vadi Etkinliği", "Perşembe"),
+        # 22:30 Savaş Arenası → 22:20 duyuru
+        (3, 22, 20, "🛡️ Savaş Arenası Etkinliği", "Perşembe"),
+        
+        # ========== CUMA ==========
+        # 13:00 Kayıp Alfabe → 12:50 duyuru
+        (4, 12, 50, "📖 Kayıp Alfabe Etkinliği", "Cuma"),
+        # 14:00 Kusursuz Cehennem → 13:50 duyuru
+        (4, 13, 50, "🔥 Kusursuz Cehennem", "Cuma"),
+        # 15:00 Kusursuz Cehennem & Sanal Evren → 14:50 duyuru
+        (4, 14, 50, "🔥 Kusursuz Cehennem & 🌐 Sanal Evren Etkinliği", "Cuma"),
+        # 19:00 Kusursuz Cehennem → 18:50 duyuru
+        (4, 18, 50, "🔥 Kusursuz Cehennem", "Cuma"),
+        # 20:00 Düello Turnuvası (Genel) → 19:50 duyuru
+        (4, 19, 50, "⚔️ Düello Turnuvası (Genel)", "Cuma"),
+        # 21:00 Kusursuz Cehennem → 20:50 duyuru
+        (4, 20, 50, "🔥 Kusursuz Cehennem", "Cuma"),
+        # 21:40 Antik Ejderha Kutbu → 21:30 duyuru
+        (4, 21, 30, "🐉 Antik Ejderha Kutbu Etkinliği", "Cuma"),
+        # 22:00 Savaş Arenası → 21:50 duyuru
+        (4, 21, 50, "🛡️ Savaş Arenası Etkinliği", "Cuma"),
+        # 22:20 Sanal Evren → 22:10 duyuru
+        (4, 22, 10, "🌐 Sanal Evren Etkinliği", "Cuma"),
+        # 23:15 Grup Düello Turnuvası → 23:05 duyuru
+        (4, 23, 5, "⚔️ Grup Düello Turnuvası", "Cuma"),
+        
+        # ========== CUMARTESİ ==========
+        # 13:00 Kayıp Alfabe → 12:50 duyuru
+        (5, 12, 50, "📖 Kayıp Alfabe Etkinliği", "Cumartesi"),
+        # 14:00 Kayıp Alfabe → 13:50 duyuru
+        (5, 13, 50, "📖 Kayıp Alfabe Etkinliği", "Cumartesi"),
+        # 15:00 Yeşil Vadi → 14:50 duyuru
+        (5, 14, 50, "🟢 Yeşil Vadi Etkinliği", "Cumartesi"),
+        # 16:00 Yeşil Vadi → 15:50 duyuru
+        (5, 15, 50, "🟢 Yeşil Vadi Etkinliği", "Cumartesi"),
+        # 17:00 Sanal Evren → 16:50 duyuru
+        (5, 16, 50, "🌐 Sanal Evren Etkinliği", "Cumartesi"),
+        # 18:00 Kayıp Alfabe → 17:50 duyuru
+        (5, 17, 50, "📖 Kayıp Alfabe Etkinliği", "Cumartesi"),
+        # 19:00 Kayıp Alfabe → 18:50 duyuru
+        (5, 18, 50, "📖 Kayıp Alfabe Etkinliği", "Cumartesi"),
+        # 20:00 Yeşil Vadi → 19:50 duyuru
+        (5, 19, 50, "🟢 Yeşil Vadi Etkinliği", "Cumartesi"),
+        # 21:40 Antik Ejderha Kutbu → 21:30 duyuru
+        (5, 21, 30, "🐉 Antik Ejderha Kutbu Etkinliği", "Cumartesi"),
+        # 22:00 Yeşil Vadi → 21:50 duyuru
+        (5, 21, 50, "🟢 Yeşil Vadi Etkinliği", "Cumartesi"),
+        # 22:30 Üç İmparatorluk Savaşı → 22:20 duyuru
+        (5, 22, 20, "👑 Üç İmparatorluk Savaşı Etkinliği", "Cumartesi"),
+        # 23:00 Sanal Evren → 22:50 duyuru
+        (5, 22, 50, "🌐 Sanal Evren Etkinliği", "Cumartesi"),
+        # 02:00 (ertesi gün) Kusursuz Cehennem → 01:50 duyuru
+        (5, 1, 50, "🔥 Kusursuz Cehennem", "Cumartesi"),
+        
+        # ========== PAZAR ==========
+        # 13:00 Yeşil Vadi → 12:50 duyuru
+        (6, 12, 50, "🟢 Yeşil Vadi Etkinliği", "Pazar"),
+        # 14:00 Yeşil Vadi → 13:50 duyuru
+        (6, 13, 50, "🟢 Yeşil Vadi Etkinliği", "Pazar"),
+        # 15:00 Kayıp Alfabe → 14:50 duyuru
+        (6, 14, 50, "📖 Kayıp Alfabe Etkinliği", "Pazar"),
+        # 16:00 Kayıp Alfabe → 15:50 duyuru
+        (6, 15, 50, "📖 Kayıp Alfabe Etkinliği", "Pazar"),
+        # 17:00 Sanal Evren → 16:50 duyuru
+        (6, 16, 50, "🌐 Sanal Evren Etkinliği", "Pazar"),
+        # 18:00 Sanal Evren → 17:50 duyuru
+        (6, 17, 50, "🌐 Sanal Evren Etkinliği", "Pazar"),
+        # 19:00 Yeşil Vadi → 18:50 duyuru
+        (6, 18, 50, "🟢 Yeşil Vadi Etkinliği", "Pazar"),
+        # 20:00 Yeşil Vadi → 19:50 duyuru
+        (6, 19, 50, "🟢 Yeşil Vadi Etkinliği", "Pazar"),
+        # 21:00 Kayıp Alfabe → 20:50 duyuru
+        (6, 20, 50, "📖 Kayıp Alfabe Etkinliği", "Pazar"),
+        # 21:40 Antik Ejderha Kutbu → 21:30 duyuru
+        (6, 21, 30, "🐉 Antik Ejderha Kutbu Etkinliği", "Pazar"),
+        # 22:00 Kayıp Alfabe → 21:50 duyuru
+        (6, 21, 50, "📖 Kayıp Alfabe Etkinliği", "Pazar"),
+        # 22:30 Savaş Arenası → 22:20 duyuru
+        (6, 22, 20, "🛡️ Savaş Arenası Etkinliği", "Pazar"),
     ]
     
     async with aiosqlite.connect(DB_PATH) as db:
@@ -212,9 +303,9 @@ async def gunluk_liste(ctx):
         if not rows:
             return await ctx.send('📋 Günlük duyuru yok!')
         
-        msg = '📋 **Günlük Duyurular:**\\n\\n'
+        msg = '📋 **Günlük Duyurular:**\n\n'
         for row in rows:
-            msg += f'🆔 **{row[0]}** | 🕐 {row[1]:02d}:{row[2]:02d}\\n'
+            msg += f'🆔 **{row[0]}** | 🕐 {row[1]:02d}:{row[2]:02d}\n'
         await ctx.send(msg)
 
 @bot.command()
@@ -242,7 +333,6 @@ async def haftalik_duyuru(ctx, gun: str, saat: str, kanal: discord.TextChannel, 
 @commands.has_permissions(administrator=True)
 async def haftalik_sil(ctx, id: int):
     async with aiosqlite.connect(DB_PATH) as db:
-        # Sistem etkinliklerini silmeyi engelle (is_system = 0 olanları sil)
         await db.execute('DELETE FROM weekly WHERE id = ? AND guild_id = ? AND is_system = 0', (id, ctx.guild.id))
         await db.commit()
         await ctx.send(f'✅ Haftalık duyuru ID **{id}** silindi!')
@@ -262,10 +352,10 @@ async def haftalik_liste(ctx):
             current_day = ""
             for day_name, hour, minute, msg in system_events:
                 if day_name != current_day:
-                    text += f"\\n**{day_name}**\\n"
+                    text += f"\n**{day_name}**\n"
                     current_day = day_name
                 clean_msg = msg.replace('||@everyone|| 📢 10 dk sonra ', '').replace(' başlıyor!', '')
-                text += f"🕐 {hour:02d}:{minute:02d} → {clean_msg}\\n"
+                text += f"🕐 {hour:02d}:{minute:02d} → {clean_msg}\n"
             embed.add_field(name=f"🤖 Sistem Etkinlikleri", value=text[:1000] or "Yok", inline=False)
         
         # Kullanıcı etkinlikleri
@@ -280,7 +370,7 @@ async def haftalik_liste(ctx):
             for id, day_name, hour, minute, ch_id in user_events:
                 channel = bot.get_channel(ch_id)
                 ch_mention = channel.mention if channel else f"ID:{ch_id}"
-                text += f"🆔 **{id}** | {day_name} {hour:02d}:{minute:02d} → {ch_mention}\\n"
+                text += f"🆔 **{id}** | {day_name} {hour:02d}:{minute:02d} → {ch_mention}\n"
             embed.add_field(name="👤 Eklenen Duyurular", value=text, inline=False)
         else:
             embed.add_field(name="👤 Eklenen Duyurular", value="Henüz eklenen duyuru yok.", inline=False)
@@ -326,9 +416,9 @@ async def tarihli_liste(ctx):
         if not rows:
             return await ctx.send('📋 Aktif tarihli duyuru yok!')
         
-        msg = '📋 **Tarihli Duyurular:**\\n\\n'
+        msg = '📋 **Tarihli Duyurular:**\n\n'
         for row in rows:
-            msg += f'🆔 **{row[0]}** | 📅 {row[1]} 🕐 {row[2]:02d}:{row[3]:02d}\\n'
+            msg += f'🆔 **{row[0]}** | 📅 {row[1]} 🕐 {row[2]:02d}:{row[3]:02d}\n'
         await ctx.send(msg)
 
 @bot.command()
@@ -340,9 +430,9 @@ async def duyuru(ctx, kanal: discord.TextChannel, *, mesaj):
 @bot.command()
 async def yardim(ctx):
     embed = discord.Embed(title='🤖 YIKILMAZ BOT - KOMUTLAR', color=0x3498db)
-    embed.add_field(name='📅 Haftalık', value='`!haftalik_duyuru Gün HH:MM #kanal mesaj`\\n`!haftalik_liste` | `!haftalik_sil ID`', inline=False)
-    embed.add_field(name='🔄 Günlük', value='`!gunluk_duyuru HH:MM #kanal mesaj`\\n`!gunluk_liste` | `!gunluk_sil ID`', inline=False)
-    embed.add_field(name='📆 Tarihli', value='`!tarihli_duyuru GG.AA.YYYY HH:MM #kanal mesaj`\\n`!tarihli_liste` | `!tarihli_sil ID`', inline=False)
+    embed.add_field(name='📅 Haftalık', value='`!haftalik_duyuru Gün HH:MM #kanal mesaj`\n`!haftalik_liste` | `!haftalik_sil ID`', inline=False)
+    embed.add_field(name='🔄 Günlük', value='`!gunluk_duyuru HH:MM #kanal mesaj`\n`!gunluk_liste` | `!gunluk_sil ID`', inline=False)
+    embed.add_field(name='📆 Tarihli', value='`!tarihli_duyuru GG.AA.YYYY HH:MM #kanal mesaj`\n`!tarihli_liste` | `!tarihli_sil ID`', inline=False)
     embed.add_field(name='📢 Anlık', value='`!duyuru #kanal mesaj`', inline=False)
     await ctx.send(embed=embed)
 
