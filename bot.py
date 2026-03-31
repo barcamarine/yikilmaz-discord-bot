@@ -42,6 +42,13 @@ async def on_ready():
 
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
+        # Coin sistemi
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS coins (
+                user_id INTEGER PRIMARY KEY,
+                coin INTEGER DEFAULT 0
+            )
+        ''')
         # Günlük duyurular
         await db.execute('''
             CREATE TABLE IF NOT EXISTS daily (
@@ -84,7 +91,21 @@ async def init_db():
             )
         ''')
         await db.commit()
+async def get_coin(user_id):
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute('SELECT coin FROM coins WHERE user_id = ?', (user_id,))
+        row = await cursor.fetchone()
+        return row[0] if row else 0
 
+async def add_coin(user_id, amount):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute('''
+            INSERT INTO coins (user_id, coin)
+            VALUES (?, ?)
+            ON CONFLICT(user_id)
+            DO UPDATE SET coin = coin + ?
+        ''', (user_id, amount, amount))
+        await db.commit()
 async def load_system_events():
     """Otomatik etkinlikleri yükle (sadece bir kere)"""
     events = [
@@ -183,24 +204,33 @@ async def load_system_events():
 # ==================== KOMUTLAR ====================
 @bot.command()
 async def zarvs(ctx, rakip: discord.Member):
-
+    sen = random.randint(1, 100)
+    o = random.randint(1, 100)
+    
     if rakip.bot:
         return await ctx.send("🤖 Botla kapışılmaz kral 😄")
 
     if rakip == ctx.author:
         return await ctx.send("😂 Kendi kendine mi kapışacan deli")
 
-    sen = random.randint(1, 100)
-    o = random.randint(1, 100)
-
     if sen > o:
         kazanan = ctx.author
         kaybeden = rakip
-        sonuc = f"🏆 {ctx.author.mention} kazandı!\n💀 {rakip.mention} kaybetti!"
+
+        await add_coin(ctx.author.id, 10)
+        await add_coin(rakip.id, -10)
+
+        sonuc = f"🏆 {ctx.author.mention} kazandı! (+10 💰)\n💀 {rakip.mention} kaybetti! (-10 💰)"
+
     elif o > sen:
         kazanan = rakip
         kaybeden = ctx.author
-        sonuc = f"🏆 {rakip.mention} kazandı!\n💀 {ctx.author.mention} kaybetti!"
+
+        await add_coin(rakip.id, 10)
+        await add_coin(ctx.author.id, -10)
+
+        sonuc = f"🏆 {rakip.mention} kazandı! (+10 💰)\n💀 {ctx.author.mention} kaybetti! (-10 💰)"
+
     else:
         return await ctx.send(f"🤝 {ctx.author.mention} vs {rakip.mention}\nİkiniz de **{sen}** attınız 😂 Berabere!")
 
@@ -227,11 +257,41 @@ async def zarvs(ctx, rakip: discord.Member):
     embed.add_field(name=ctx.author.display_name, value=f"🎲 {sen}", inline=True)
     embed.add_field(name=rakip.display_name, value=f"🎲 {o}", inline=True)
     embed.add_field(name="🏁 Sonuç", value=sonuc, inline=False)
-    embed.add_field(name="💬 Yorum", value=f"{kaybeden.mention} {laf}", inline=False)
+    kazanan_coin = await get_coin(kazanan.id)
+    kaybeden_coin = await get_coin(kaybeden.id)
 
+    embed.add_field(
+        name="💰 Coin Durumu",
+        value=f"{kazanan.display_name}: {kazanan_coin}\n{kaybeden.display_name}: {kaybeden_coin}",
+        inline=False
+)
+    embed.add_field(name="💬 Yorum", value=f"{kaybeden.mention} {laf}", inline=False)
     await ctx.send(embed=embed)
     
 @bot.command()
+async def coin(ctx):
+        coin = await get_coin(ctx.author.id)
+        await ctx.send(f"💰 {ctx.author.display_name} coinin: {coin}")
+    
+@bot.command()
+async def topcoin(ctx):
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute('SELECT user_id, coin FROM coins ORDER BY coin DESC LIMIT 10')
+        rows = await cursor.fetchall()
+
+    if not rows:
+        return await ctx.send("❌ Daha kimse coin kazanmamış!")
+
+    text = "🏆 **EN ZENGİNLER** 🏆\n\n"
+
+    for i, (user_id, coin) in enumerate(rows, start=1):
+        user = bot.get_user(user_id)
+        name = user.display_name if user else f"ID:{user_id}"
+        text += f"{i}. {name} - {coin} 💰\n"
+
+    await ctx.send(text)
+    
+@bot.command()    
 async def gir(ctx):
     if ctx.author.voice:
         channel = ctx.author.voice.channel
