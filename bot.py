@@ -1,6 +1,7 @@
 import discord
 import random
 from discord.ext import commands, tasks
+VOICE_CHANNEL_ID = 1175190408846913597  # buraya kendi kanal ID
 import os
 import aiosqlite
 import pytz
@@ -45,6 +46,33 @@ TURKCE_GUNLER = {
 async def on_ready():
     await init_db()
 
+    # 🔊 SES KANALI (BURAYA KOY)
+    channel = bot.get_channel(VOICE_CHANNEL_ID)
+    if channel:
+        try:
+            await channel.connect()
+            print("🔊 Ses kanalına bağlandı!")
+        except:
+            print("⚠️ Zaten bağlı veya hata")
+
+    # 💥 ESKİ EVENTLERİ SİL
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("DELETE FROM weekly WHERE is_system = 1")
+        await db.commit()
+        print("🗑️ Eski eventler silindi!")
+
+    # ✅ YENİ EVENTLER
+    await load_system_events()
+
+    if not check_all_announcements.is_running():
+        check_all_announcements.start()
+
+    keep_voice_alive.start()
+
+    print(f'✅ {bot.user} olarak giriş yapıldı!')
+    print(f'📊 {len(bot.guilds)} sunucuda aktif!')
+    print(f'💾 Veritabanı: {DB_PATH}')
+    
     # 💥 ESKİ EVENTLERİ SİL
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM weekly WHERE is_system = 1")
@@ -104,6 +132,7 @@ async def init_db():
                 sent BOOLEAN DEFAULT 0
             )
         ''')
+        
         await db.commit()
 
 async def load_system_events():
