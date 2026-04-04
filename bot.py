@@ -411,33 +411,19 @@ async def yardim(ctx):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def sil(ctx, miktar: int):
-    import asyncio
-    from datetime import datetime, timedelta
-
     if miktar < 1:
-        return await ctx.send("❌ Geçerli bir sayı gir!")
+        return await ctx.send("❌ Geçerli sayı gir!")
 
-    silinen = 0
-    iki_hafta = datetime.utcnow() - timedelta(days=14)
+    try:
+        silinen = await ctx.channel.purge(limit=miktar + 1)
+        sonuc = await ctx.send(f"🧹 {ctx.author.mention} {len(silinen)-1} mesaj silindi.")
+        
+        import asyncio
+        await asyncio.sleep(5)
+        await sonuc.delete()
 
-    mesajlar = [msg async for msg in ctx.channel.history(limit=miktar+1)]
-
-    for msg in mesajlar:
-        try:
-            if msg.created_at > iki_hafta:
-                await msg.delete()
-            else:
-                await msg.delete()
-                await asyncio.sleep(0.3)
-
-            silinen += 1
-        except:
-            pass
-
-    sonuc = await ctx.send(f"🧹 {ctx.author.mention} {silinen} adet mesaj silindi.")
-    await asyncio.sleep(5)
-    await sonuc.delete()
-
+    except Exception as e:
+        await ctx.send(f"❌ Hata: {e}")
 
 @bot.command()
 async def zarvs(ctx, uye: discord.Member):
