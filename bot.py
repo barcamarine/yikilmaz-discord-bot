@@ -16,7 +16,7 @@ ZARVS_LAFLAR = [
     "🔥 bir dahaki sefere belki",
     "😏 kolay lokmaymışsın",
     "⚰️ mezarını kazdın",
-    "🤡 clown moment",
+    "🤡 patatez oldun",
     "🥶 buz gibi kaybettin",
 ]
 
