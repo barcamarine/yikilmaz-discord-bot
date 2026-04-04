@@ -47,13 +47,12 @@ async def on_ready():
     await init_db()
 
     # 🔊 SES KANALI (BURAYA KOY)
-    channel = bot.get_channel(VOICE_CHANNEL_ID)
-    if channel:
-        try:
-            await channel.connect()
-            print("🔊 Ses kanalına bağlandı!")
-        except:
-            print("⚠️ Zaten bağlı veya hata")
+    try:
+        channel = await bot.fetch_channel(VOICE_CHANNEL_ID)
+        await channel.connect()
+        print("🔊 Ses kanalına bağlandı!")
+    except Exception as e:
+        print(f"❌ Ses bağlantı hatası: {e}")
 
     # 💥 ESKİ EVENTLERİ SİL
     async with aiosqlite.connect(DB_PATH) as db:
