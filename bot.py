@@ -30,6 +30,7 @@ TR_TZ = pytz.timezone('Europe/Istanbul')
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
+intents.voice_states = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
@@ -49,8 +50,11 @@ async def on_ready():
     # 🔊 SES KANALI (BURAYA KOY)
     try:
         channel = await bot.fetch_channel(VOICE_CHANNEL_ID)
-        await channel.connect()
-        print("🔊 Ses kanalına bağlandı!")
+        if isinstance(channel, discord.VoiceChannel):
+            await channel.connect()
+            print("🔊 Ses kanalına bağlandı!")
+        else:
+            print("❌ Bu bir ses kanalı değil!")
     except Exception as e:
         print(f"❌ Ses bağlantı hatası: {e}")
 
@@ -413,35 +417,27 @@ async def sil(ctx, miktar: int):
     if miktar < 1:
         return await ctx.send("❌ Geçerli bir sayı gir!")
 
-    # komutu sil
-    await ctx.message.delete()
-
     silinen = 0
     iki_hafta = datetime.utcnow() - timedelta(days=14)
 
-    async for msg in ctx.channel.history(limit=1000):
-        if silinen >= miktar:
-            break
+    mesajlar = [msg async for msg in ctx.channel.history(limit=miktar+1)]
 
+    for msg in mesajlar:
         try:
-            # yeni mesajlar (hızlı)
             if msg.created_at > iki_hafta:
                 await msg.delete()
             else:
-                # eski mesajlar (yavaş ama siler)
                 await msg.delete()
                 await asyncio.sleep(0.3)
 
             silinen += 1
-
         except:
             pass
 
-    # sonuç mesajı
     sonuc = await ctx.send(f"🧹 {ctx.author.mention} {silinen} adet mesaj silindi.")
-
     await asyncio.sleep(5)
     await sonuc.delete()
+
 
 @bot.command()
 async def zarvs(ctx, uye: discord.Member):
@@ -491,13 +487,35 @@ async def zarvs(ctx, uye: discord.Member):
 # ==================== KONTROL SİSTEMİ ====================
 
 @tasks.loop(minutes=1)
-async def check_all_announcements():
+
     now = datetime.now(TR_TZ)  # Türkiye saati
     current_time = time(now.hour, now.minute)
     current_weekday = now.weekday()
     today_str = now.strftime('%Y-%m-%d')
-    
+
+@tasks.loop(minutes=1)
+async def check_all_announcements():
+    now = datetime.now(TR_TZ)
+    current_time = time(now.hour, now.minute)
+    current_weekday = now.weekday()
+    today_str = now.strftime('%Y-%m-%d')
+
     async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute('SELECT channel_id, message FROM daily WHERE hour = ? AND minute = ?', 
+                                    (current_time.hour, current_time.minute))
+        for row in await cursor.fetchall():
+            await send_msg(row[0], row[1])
+
+@tasks.loop(minutes=1)
+async def keep_voice_alive():
+    try:
+        channel = await bot.fetch_channel(VOICE_CHANNEL_ID)
+        if not channel.guild.voice_client:
+            await channel.connect()
+            print("🔄 Tekrar bağlandı!")
+    except:
+        pass
+        
         # Günlük duyurular
         cursor = await db.execute('SELECT channel_id, message FROM daily WHERE hour = ? AND minute = ?', 
                                     (current_time.hour, current_time.minute))
