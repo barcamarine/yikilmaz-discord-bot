@@ -375,6 +375,45 @@ async def yardim(ctx):
     embed.add_field(name='📆 Tarihli', value='`!tarihli_duyuru GG.AA.YYYY HH:MM #kanal mesaj`\\n`!tarihli_liste` | `!tarihli_sil ID`', inline=False)
     embed.add_field(name='📢 Anlık', value='`!duyuru #kanal mesaj`', inline=False)
     await ctx.send(embed=embed)
+    
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def sil(ctx, miktar: int):
+    import asyncio
+    from datetime import datetime, timedelta
+
+    if miktar < 1:
+        return await ctx.send("❌ Geçerli bir sayı gir!")
+
+    # komutu sil
+    await ctx.message.delete()
+
+    silinen = 0
+    iki_hafta = datetime.utcnow() - timedelta(days=14)
+
+    async for msg in ctx.channel.history(limit=1000):
+        if silinen >= miktar:
+            break
+
+        try:
+            # yeni mesajlar (hızlı)
+            if msg.created_at > iki_hafta:
+                await msg.delete()
+            else:
+                # eski mesajlar (yavaş ama siler)
+                await msg.delete()
+                await asyncio.sleep(0.3)
+
+            silinen += 1
+
+        except:
+            pass
+
+    # sonuç mesajı
+    sonuc = await ctx.send(f"🧹 {ctx.author.mention} {silinen} adet mesaj silindi.")
+
+    await asyncio.sleep(5)
+    await sonuc.delete()
 
 @bot.command()
 async def zarvs(ctx, uye: discord.Member):
