@@ -473,7 +473,7 @@ async def zarvs(ctx, uye: discord.Member):
 # ==================== KONTROL SİSTEMİ ====================
 
 @tasks.loop(minutes=1)
-
+async def check_all_announcements():
     now = datetime.now(TR_TZ)  # Türkiye saati
     current_time = time(now.hour, now.minute)
     current_weekday = now.weekday()
