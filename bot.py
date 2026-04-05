@@ -1,7 +1,6 @@
 import discord
 import random
 from discord.ext import commands, tasks
-VOICE_CHANNEL_ID = 1175190408846913597  # buraya kendi kanal ID
 import os
 import aiosqlite
 import pytz
@@ -36,7 +35,6 @@ TR_TZ = pytz.timezone('Europe/Istanbul')
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
-intents.voice_states = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
@@ -53,50 +51,19 @@ TURKCE_GUNLER = {
 async def on_ready():
     await init_db()
 
-    # 🔊 SES KANALI (BURAYA KOY)
-    try:
-        channel = await bot.fetch_channel(VOICE_CHANNEL_ID)
-        if isinstance(channel, discord.VoiceChannel):
-            await channel.connect()
-            print("🔊 Ses kanalına bağlandı!")
-        else:
-            print("❌ Bu bir ses kanalı değil!")
-    except Exception as e:
-        print(f"❌ Ses bağlantı hatası: {e}")
-
-    # 💥 ESKİ EVENTLERİ SİL
+    # eski eventleri temizle
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM weekly WHERE is_system = 1")
         await db.commit()
-        print("🗑️ Eski eventler silindi!")
 
-    # ✅ YENİ EVENTLER
+    # 🔥 EVENTLERİ YÜKLE (EN ÖNEMLİ)
     await load_system_events()
 
+    # 🔄 DUYURU LOOP BAŞLAT
     if not check_all_announcements.is_running():
         check_all_announcements.start()
 
-    keep_voice_alive.start()
-
-    print(f'✅ {bot.user} olarak giriş yapıldı!')
-    print(f'📊 {len(bot.guilds)} sunucuda aktif!')
-    print(f'💾 Veritabanı: {DB_PATH}')
-    
-    # 💥 ESKİ EVENTLERİ SİL
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("DELETE FROM weekly WHERE is_system = 1")
-        await db.commit()
-        print("🗑️ Eski eventler silindi!")
-
-    # ✅ YENİ EVENTLERİ YÜKLE
-    await load_system_events()
-
-    if not check_all_announcements.is_running():
-        check_all_announcements.start()
-
-    print(f'✅ {bot.user} olarak giriş yapıldı!')
-    print(f'📊 {len(bot.guilds)} sunucuda aktif!')
-    print(f'💾 Veritabanı: {DB_PATH}')
+    print(f'✅ {bot.user} aktif!')
 
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
@@ -480,54 +447,39 @@ async def zarvs(ctx, uye: discord.Member):
 
 @tasks.loop(minutes=1)
 async def check_all_announcements():
-    now = datetime.now(TR_TZ)  # Türkiye saati
-    current_time = time(now.hour, now.minute)
-    current_weekday = now.weekday()
-    today_str = now.strftime('%Y-%m-%d')
-
-@tasks.loop(minutes=1)
-async def check_all_announcements():
     now = datetime.now(TR_TZ)
     current_time = time(now.hour, now.minute)
     current_weekday = now.weekday()
     today_str = now.strftime('%Y-%m-%d')
 
     async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute('SELECT channel_id, message FROM daily WHERE hour = ? AND minute = ?', 
-                                    (current_time.hour, current_time.minute))
+
+        # Günlük
+        cursor = await db.execute(
+            'SELECT channel_id, message FROM daily WHERE hour = ? AND minute = ?',
+            (current_time.hour, current_time.minute)
+        )
         for row in await cursor.fetchall():
             await send_msg(row[0], row[1])
 
-@tasks.loop(minutes=1)
-async def keep_voice_alive():
-    try:
-        channel = await bot.fetch_channel(VOICE_CHANNEL_ID)
-        if not channel.guild.voice_client:
-            await channel.connect()
-            print("🔄 Tekrar bağlandı!")
-    except:
-        pass
-        
-        # Günlük duyurular
-        cursor = await db.execute('SELECT channel_id, message FROM daily WHERE hour = ? AND minute = ?', 
-                                    (current_time.hour, current_time.minute))
+        # Haftalık
+        cursor = await db.execute(
+            'SELECT channel_id, message FROM weekly WHERE day = ? AND hour = ? AND minute = ?',
+            (current_weekday, current_time.hour, current_time.minute)
+        )
         for row in await cursor.fetchall():
             await send_msg(row[0], row[1])
-        
-        # Haftalık duyurular
-        cursor = await db.execute('SELECT channel_id, message FROM weekly WHERE day = ? AND hour = ? AND minute = ?',
-                                    (current_weekday, current_time.hour, current_time.minute))
-        for row in await cursor.fetchall():
-            await send_msg(row[0], row[1])
-        
-        # Tarihli duyurular
-        cursor = await db.execute('SELECT id, channel_id, message FROM scheduled WHERE date = ? AND hour = ? AND minute = ? AND sent = 0',
-                                    (today_str, current_time.hour, current_time.minute))
+
+        # Tarihli
+        cursor = await db.execute(
+            'SELECT id, channel_id, message FROM scheduled WHERE date = ? AND hour = ? AND minute = ? AND sent = 0',
+            (today_str, current_time.hour, current_time.minute)
+        )
         rows = await cursor.fetchall()
         for id, ch_id, msg in rows:
             await send_msg(ch_id, msg)
             await db.execute('UPDATE scheduled SET sent = 1 WHERE id = ?', (id,))
-        
+
         await db.commit()
 
 async def send_msg(channel_id, message):
