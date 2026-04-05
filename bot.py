@@ -197,7 +197,11 @@ async def load_system_events():
         
         if count[0] == 0:
             for day, hour, minute, msg, day_name in events:
-                full_msg = f"||@everyone|| 📢 10 dk sonra {msg} başlıyor!"
+                if "UYANAN EVDE OLAN" in msg or "DEĞERLİ ABİLERİM KARDEŞLERİM" in msg:
+                    full_msg = f"@everyone {msg}"
+                else:
+                    full_msg = f"||@everyone|| 📢 10 dk sonra {msg} başlıyor!"
+                    
                 await db.execute('''
                     INSERT INTO weekly (day, day_name, channel_id, message, hour, minute, is_system, created_by)
                     VALUES (?, ?, ?, ?, ?, ?, 1, 'System')
