@@ -63,6 +63,8 @@ async def on_ready():
     if not check_all_announcements.is_running():
         check_all_announcements.start()
 
+    await bot.tree.sync()
+
     print(f'✅ {bot.user} aktif!')
 
 async def init_db():
@@ -375,12 +377,16 @@ async def duyuru(ctx, kanal: discord.TextChannel, *, mesaj):
 @bot.command()
 async def yardim(ctx):
     embed = discord.Embed(title='🤖 YIKILMAZ BOT - KOMUTLAR', color=0x3498db)
-    embed.add_field(name='📅 Haftalık', value='`!haftalik_duyuru Gün HH:MM #kanal mesaj`\\n`!haftalik_liste` | `!haftalik_sil ID`', inline=False)
-    embed.add_field(name='🔄 Günlük', value='`!gunluk_duyuru HH:MM #kanal mesaj`\\n`!gunluk_liste` | `!gunluk_sil ID`', inline=False)
-    embed.add_field(name='📆 Tarihli', value='`!tarihli_duyuru GG.AA.YYYY HH:MM #kanal mesaj`\\n`!tarihli_liste` | `!tarihli_sil ID`', inline=False)
+    embed.add_field(name='📅 Haftalık', value='`!haftalik_duyuru Gün SAAT:DAKİKA #kanal mesaj`\\n`!haftalik_liste` | `!haftalik_sil ID`', inline=False)
+    embed.add_field(name='🔄 Günlük', value='`!gunluk_duyuru SAAT:DAKİKA #kanal mesaj`\\n`!gunluk_liste` | `!gunluk_sil ID`', inline=False)
+    embed.add_field(name='📆 Tarihli', value='`!tarihli_duyuru GÜN.AY.YIL SAAT:DAKİKA #kanal mesaj`\\n`!tarihli_liste` | `!tarihli_sil ID`', inline=False)
     embed.add_field(name='📢 Anlık', value='`!duyuru #kanal mesaj`', inline=False)
     await ctx.send(embed=embed)
-    
+
+@bot.tree.command(name="ping", description="Bot aktif mi kontrol et")
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message(f"{interaction.user.mention} 7/24 nöbetteyim komutanım! 🫡")
+
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def sil(ctx, miktar: int):
