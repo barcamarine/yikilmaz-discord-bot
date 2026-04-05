@@ -11,14 +11,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 ZARVS_LAFLAR = [
-    "💀 ezildin resmen",
-    "😂 bu kadar kötü zar mı atılır",
+    "💀 ağzına sıçıldı",
+    "😂 bu kadar kötü zar mı atılır kolsuz",
     "👀 biraz daha çalışman lazım",
     "🔥 bir dahaki sefere belki",
-    "😏 kolay lokmaymışsın",
-    "⚰️ mezarını kazdın",
+    "😏 çok basitsin be olum",
+    "⚰️ yallah mezara",
     "🤡 patatez oldun",
-    "🥶 buz gibi kaybettin",
+    "💀 cenaze namazını kılıyoruz",
+    "🚪 al kendini git burdan",
+    "🦁 aslanparçası kaybol",
+    "⌛ söz vermedik ama elbet bir gün",
+    "🤨 kudurdun mu sen?",
+    "🗑️ çöp poşeti",
+    "🦾 sana n11.com'dan kol alalım", 
 ]
 
 ZAR_GIF = "https://www.hareketligifler.net/data/media/710/zar-hareketli-resim-0016.gif"
