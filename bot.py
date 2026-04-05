@@ -135,7 +135,7 @@ async def load_system_events():
     (1, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Salı"),
     (1, 20, 50, "⚔️ Düello Turnuvası (Ninja) - Kayıp Alfabe Etkinliği", "Salı"),
     (1, 22, 20, "🛡️ Savaş Arenası", "Salı"),
-    (1, 23, 05, "⚔️ 8v8 Lonca Savaşı", "Salı"),
+    (1, 23, 5, "⚔️ 8v8 Lonca Savaşı", "Salı"),
 
     # ================= ÇARŞAMBA =================
     (2, 12, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
@@ -166,7 +166,7 @@ async def load_system_events():
     (4, 20, 50, "⚔️ Düello Turnuvası (Genel)", "Cuma"),
     (4, 21, 30, "🐉 Antik Ejderha Kutbu", "Cuma"),
     (4, 22, 20, "🛡️ Savaş Arenası", "Cuma"),
-    (4, 23, 05, "⚔️ 8v8 Lonca Savaşı", "Cuma"),
+    (4, 23, 5, "⚔️ 8v8 Lonca Savaşı", "Cuma"),
 
     # ================= CUMARTESİ =================
     (5, 00, 50, "🔥 Kusursuz Cehennem", "Cumartesi"),
