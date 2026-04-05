@@ -118,7 +118,7 @@ async def load_system_events():
     events = [
     # ================= PAZARTESİ =================
     (0, 00, 50, "📖 Kayıp Alfabe", "Pazartesi"),
-    (0, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ**  :dstr: :pray: :heart:", "Pazartesi"),
+    (0, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ**  :pray: :heart:", "Pazartesi"),
     (0, 13, 50, "📖 Kayıp Alfabe", "Pazartesi"),
     (0, 14, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
     (0, 18, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
@@ -129,7 +129,7 @@ async def load_system_events():
 
     # ================= SALI =================
     (1, 12, 50, "🟢 Yeşil Vadi", "Salı"),
-    (1, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ**  :dstr: :pray: :heart:", "Salı"),
+    (1, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ** :pray: :heart:", "Salı"),
     (1, 14, 50, "📖 Kayıp Alfabe", "Salı"),
     (1, 18, 50, "🟢 Yeşil Vadi", "Salı"),
     (1, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Salı"),
@@ -139,7 +139,7 @@ async def load_system_events():
 
     # ================= ÇARŞAMBA =================
     (2, 12, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
-    (2, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ**  :dstr: :pray: :heart:", "Çarşamba"),
+    (2, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ** :pray: :heart:", "Çarşamba"),
     (2, 18, 50, "📖 Kayıp Alfabe", "Çarşamba"),
     (2, 19, 51, "🔥 *DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Çarşamba"),
     (2, 20, 50, "⚔️ Düello Turnuvası (Sura) - Kusursuz Cehennem", "Çarşamba"),
@@ -148,7 +148,7 @@ async def load_system_events():
 
     # ================= PERŞEMBE =================
     (3, 00, 50, "📖 Kayıp Alfabe", "Perşembe"),
-    (3, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ**  :dstr: :pray: :heart:", "Perşembe"),
+    (3, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ** :pray: :heart:", "Perşembe"),
     (3, 12, 50, "📖 Kayıp Alfabe", "Perşembe"),
     (3, 13, 50, "🟢 Yeşil Vadi", "Perşembe"),
     (3, 18, 50, "📖 Kayıp Alfabe", "Perşembe"),
@@ -160,7 +160,7 @@ async def load_system_events():
     # ================= CUMA =================
     (4, 00, 50, "📖 Kayıp Alfabe", "Cuma"),
     (4, 14, 50, "🔥 Kusursuz Cehennem", "Cuma"),
-    (4, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ**  :dstr: :pray: :heart:", "Cuma"),
+    (4, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ** :pray: :heart:", "Cuma"),
     (4, 19, 50, "🔥 Kusursuz Cehennem", "Cuma"),
     (4, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Cuma"),
     (4, 20, 50, "⚔️ Düello Turnuvası (Genel)", "Cuma"),
@@ -171,7 +171,7 @@ async def load_system_events():
     # ================= CUMARTESİ =================
     (5, 00, 50, "🔥 Kusursuz Cehennem", "Cumartesi"),
     (5, 12, 50, "📖 Kayıp Alfabe", "Cumartesi"),
-    (5, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ**  :dstr: :pray: :heart:", "Cumartesi"),
+    (5, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ** :pray: :heart:", "Cumartesi"),
     (5, 14, 50, "🟢 Yeşil Vadi", "Cumartesi"),
     (5, 18, 50, "📖 Kayıp Alfabe", "Cumartesi"),
     (5, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Cumartesi"),
@@ -181,7 +181,7 @@ async def load_system_events():
 
     # ================= PAZAR =================
     (6, 12, 50, "🟢 Yeşil Vadi", "Pazar"),
-    (6, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ**  :dstr: :pray: :heart:", "Pazar"),
+    (6, 12, 51, "📖 **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ** :pray: :heart:", "Pazar"),
     (6, 14, 50, "📖 Kayıp Alfabe", "Pazar"),
     (6, 18, 50, "🟢 Yeşil Vadi", "Pazar"),
     (6, 19, 50, "🟢 Yeşil Vadi", "Pazar"),
