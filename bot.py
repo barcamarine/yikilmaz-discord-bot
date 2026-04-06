@@ -221,7 +221,6 @@ async def sor(ctx, *, soru):
     try:
         import requests
 
-        # Wikipedia API search
         search_url = "https://tr.wikipedia.org/w/api.php"
         params = {
             "action": "query",
@@ -231,6 +230,12 @@ async def sor(ctx, *, soru):
         }
 
         res = requests.get(search_url, params=params)
+
+        # 🔥 RESPONSE BOŞ MU?
+        if res.status_code != 200 or not res.text:
+            await msg.edit(content="⚠️ Wikipedia bağlantı hatası.")
+            return
+
         data = res.json()
 
         results = data.get("query", {}).get("search", [])
@@ -239,15 +244,14 @@ async def sor(ctx, *, soru):
             await msg.edit(content="❌ Bilgi bulunamadı.")
             return
 
-        # ilk sonucu al
         title = results[0]["title"]
 
-        # sayfa özeti çek
         summary_url = f"https://tr.wikipedia.org/api/rest_v1/page/summary/{title}"
         summary_res = requests.get(summary_url)
 
-        if summary_res.status_code != 200:
-            await msg.edit(content="❌ Bilgi alınamadı.")
+        # 🔥 BURADA DA KONTROL
+        if summary_res.status_code != 200 or not summary_res.text:
+            await msg.edit(content="⚠️ Bilgi alınamadı.")
             return
 
         summary_data = summary_res.json()
