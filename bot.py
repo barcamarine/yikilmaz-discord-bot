@@ -216,40 +216,29 @@ async def load_system_events():
 
 @bot.command()
 async def sor(ctx, *, soru):
-    msg = await ctx.send("🔍 Araştırıyorum...")
+    msg = await ctx.send("🔍 Google'da aranıyor...")
 
     try:
-        API_URL = "https://router.huggingface.co/hf-inference/models/google/flan-t5-large"
-        headers = {
-            "Authorization": f"Bearer {os.getenv('HF_TOKEN')}"
+        import requests
+
+        url = "https://api.duckduckgo.com/"
+        params = {
+            "q": soru,
+            "format": "json",
+            "no_html": 1,
+            "skip_disambig": 1
         }
 
-        response = requests.post(API_URL, headers=headers, json={
-            "inputs": soru
-        })
+        res = requests.get(url, params=params)
+        data = res.json()
 
-        # 🔥 JSON güvenli okuma
-        try:
-            data = response.json()
-        except:
-            await msg.edit(content="⚠️ API cevap vermedi, tekrar dene.")
-            return
+        cevap = data.get("Abstract")
 
-        # 🔥 cevap yakalama
-        if isinstance(data, list) and "generated_text" in data[0]:
-            cevap = data[0]["generated_text"]
-
-        elif isinstance(data, dict) and "generated_text" in data:
-            cevap = data["generated_text"]
-
-        elif isinstance(data, dict) and "error" in data:
-            cevap = f"⚠️ {data['error']}"
-
-        else:
-            cevap = "Cevap bulunamadı 😢"
+        if not cevap:
+            cevap = "Sonuç bulunamadı 😢"
 
         await msg.edit(
-            content=f"🧠 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Cevap:\n{cevap}"
+            content=f"🌐 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Sonuç:\n{cevap}"
         )
 
     except Exception as e:
