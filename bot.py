@@ -2,12 +2,14 @@ import discord
 import random
 from discord.ext import commands, tasks
 import os
+from openai import AsyncOpenAI
 import aiosqlite
 import pytz
 from datetime import datetime, time
 from dotenv import load_dotenv
 
 load_dotenv()
+client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 ZARVS_LAFLAR = [
     "💀 ağzına sıçıldı",
@@ -211,6 +213,28 @@ async def load_system_events():
             print(f'✅ {len(events)} sistem etkinliği yüklendi!')
 
 # ==================== KOMUTLAR ====================
+
+    @bot.command()
+    async def sor(ctx, *, soru):
+        msg = await ctx.send("🔍 Araştırıyorum...")
+
+        try:
+            response = await client.chat.completions.create(
+                model="gpt-4.1-mini",
+                messages=[
+                    {"role": "system", "content": "Kısa ve net cevap ver, Türkçe konuş."},
+                    {"role": "user", "content": soru}
+            ]
+        )
+
+            cevap = response.choices[0].message.content
+
+            await msg.edit(
+                content=f"🧠 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Cevap:\n{cevap}"
+        )
+
+        except Exception as e:
+            await msg.edit(content=f"❌ Hata: {e}")
 
 @bot.command()
 @commands.has_permissions(administrator=True)
