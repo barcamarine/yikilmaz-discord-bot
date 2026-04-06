@@ -2,14 +2,14 @@ import discord
 import random
 from discord.ext import commands, tasks
 import os
-from openai import AsyncOpenAI
+import requests
 import aiosqlite
 import pytz
 from datetime import datetime, time
 from dotenv import load_dotenv
 
 load_dotenv()
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 ZARVS_LAFLAR = [
     "💀 ağzına sıçıldı",
@@ -219,15 +219,22 @@ async def sor(ctx, *, soru):
     msg = await ctx.send("🔍 Araştırıyorum...")
 
     try:
-        response = await client.chat.completions.create(
-            model="gpt-4.1-mini",
-            messages=[
-                {"role": "system", "content": "Kısa ve net cevap ver, Türkçe konuş."},
-                {"role": "user", "content": soru}
-            ]
-        )
+        API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
+        headers = {
+            "Authorization": f"Bearer {os.getenv('HF_TOKEN')}"
+        }
 
-        cevap = response.choices[0].message.content
+        response = requests.post(API_URL, headers=headers, json={
+            "inputs": soru
+        })
+
+        data = response.json()
+
+        # cevap çekme
+        if isinstance(data, list):
+            cevap = data[0]["generated_text"]
+        else:
+            cevap = "Cevap alınamadı 😢"
 
         await msg.edit(
             content=f"🧠 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Cevap:\n{cevap}"
