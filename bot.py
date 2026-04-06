@@ -216,63 +216,49 @@ async def load_system_events():
 
 @bot.command()
 async def sor(ctx, *, soru):
-    msg = await ctx.send("🔍 Araştırıyorum...")
+    msg = await ctx.send("🔍 Google'da aranıyor...")
 
     try:
         import requests
+        import os
 
-        headers = {"User-Agent": "Mozilla/5.0"}
+        url = "https://serpapi.com/search.json"
 
-        # 🔎 Wikipedia search
-        search_url = "https://tr.wikipedia.org/w/api.php"
         params = {
-            "action": "query",
-            "list": "search",
-            "srsearch": soru,
-            "format": "json"
+            "q": soru,
+            "api_key": os.getenv("SERPAPI_KEY"),
+            "hl": "tr"
         }
 
-        res = requests.get(search_url, params=params, headers=headers)
+        res = requests.get(url, params=params)
         data = res.json()
 
-        results = data.get("query", {}).get("search", [])
-        if not results:
-            await msg.edit(content="❌ Bilgi bulunamadı.")
-            return
-
-        title = results[0]["title"]
-
-        # 🔥 infobox çek (en önemli kısım)
-        page_url = f"https://tr.wikipedia.org/wiki/{title.replace(' ', '_')}"
-        page_res = requests.get(page_url, headers=headers)
-
-        from bs4 import BeautifulSoup
-        soup = BeautifulSoup(page_res.text, "html.parser")
-
-        info = soup.find("table", {"class": "infobox"})
         cevap = ""
 
-        if info:
-            rows = info.find_all("tr")
-            for row in rows:
-                if "Doğum" in row.text:
-                    cevap = row.text.strip()
-                    break
+        # 🔥 Direkt cevap varsa
+        if "answer_box" in data:
+            box = data["answer_box"]
 
-        # fallback (eğer bulamazsa)
-        if not cevap:
-            summary_url = f"https://tr.wikipedia.org/api/rest_v1/page/summary/{title}"
-            summary_res = requests.get(summary_url, headers=headers)
-            summary_data = summary_res.json()
-            cevap = summary_data.get("extract", "Bilgi bulunamadı.")
+            if "answer" in box:
+                cevap = box["answer"]
+            elif "snippet" in box:
+                cevap = box["snippet"]
+
+        # 🔥 normal sonuç
+        elif "organic_results" in data:
+            cevap = data["organic_results"][0]["snippet"]
+
+        else:
+            cevap = "Sonuç bulunamadı 😢"
 
         await msg.edit(
-            content=f"🌐 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Sonuç:\n{cevap[:300]}"
+            content=f"🌐 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Cevap:\n{cevap}"
         )
 
     except Exception as e:
         await msg.edit(content=f"❌ Hata: {e}")
 
+# ==================== SOR KISMI ÜSTTE ====================
 
 @bot.command()
 @commands.has_permissions(administrator=True)
@@ -312,6 +298,7 @@ async def gunluk_liste(ctx):
         for row in rows:
             msg += f'🆔 **{row[0]}** | 🕐 {row[1]:02d}:{row[2]:02d}\\n'
         await ctx.send(msg)
+
 
 @bot.command()
 @commands.has_permissions(administrator=True)
