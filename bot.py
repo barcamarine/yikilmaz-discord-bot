@@ -220,30 +220,38 @@ async def sor(ctx, *, soru):
 
     try:
         import requests
-        from bs4 import BeautifulSoup
 
-        query = soru.replace(" ", "_")
+        # Wikipedia API search
+        search_url = "https://tr.wikipedia.org/w/api.php"
+        params = {
+            "action": "query",
+            "list": "search",
+            "srsearch": soru,
+            "format": "json"
+        }
 
-        url = f"https://tr.wikipedia.org/wiki/{query}"
-        res = requests.get(url)
+        res = requests.get(search_url, params=params)
+        data = res.json()
 
-        if res.status_code != 200:
+        results = data.get("query", {}).get("search", [])
+
+        if not results:
             await msg.edit(content="❌ Bilgi bulunamadı.")
             return
 
-        soup = BeautifulSoup(res.text, "html.parser")
+        # ilk sonucu al
+        title = results[0]["title"]
 
-        paragraphs = soup.select("p")
+        # sayfa özeti çek
+        summary_url = f"https://tr.wikipedia.org/api/rest_v1/page/summary/{title}"
+        summary_res = requests.get(summary_url)
 
-        cevap = ""
-        for p in paragraphs:
-            text = p.get_text().strip()
-            if text:
-                cevap = text
-                break
+        if summary_res.status_code != 200:
+            await msg.edit(content="❌ Bilgi alınamadı.")
+            return
 
-        if not cevap:
-            cevap = "Bilgi bulunamadı 😢"
+        summary_data = summary_res.json()
+        cevap = summary_data.get("extract", "Bilgi bulunamadı.")
 
         await msg.edit(
             content=f"🌐 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Sonuç:\n{cevap[:500]}"
