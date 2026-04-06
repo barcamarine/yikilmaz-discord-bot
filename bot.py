@@ -37,6 +37,7 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
+ZARVS_CHANNEL_ID = 1490414678118105119
 
 # Railway'de /data dizini persistent volume olarak mount edilir
 DB_PATH = os.getenv('DATABASE_PATH', '/data/announcements.db')
@@ -501,6 +502,32 @@ async def on_command_error(ctx, error):
         await ctx.send(f'❌ Eksik parametre! Kullanım: `!{ctx.command.name}`')
     else:
         print(f'Hata: {error}')
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    if message.channel.id == ZARVS_CHANNEL_ID:
+        if not message.content.startswith("!zarvs"):
+            try:
+                await message.delete()
+
+                # uyarı mesajı
+                warn = await message.channel.send("❌ Bu kanalda sadece !zarvs komutu kullanılabilir!")
+
+                # 5 saniye bekle
+                import asyncio
+                await asyncio.sleep(5)
+
+                # uyarıyı sil
+                await warn.delete()
+
+            except:
+                pass
+            return
+
+    await bot.process_commands(message)
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 if not TOKEN:
