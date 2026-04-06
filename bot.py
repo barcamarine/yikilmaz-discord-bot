@@ -228,11 +228,14 @@ async def sor(ctx, *, soru):
             "inputs": soru
         })
 
-        data = response.json()
+        # 🔥 JSON güvenli okuma
+        try:
+            data = response.json()
+        except:
+            await msg.edit(content="⚠️ API cevap vermedi, tekrar dene.")
+            return
 
-        print(data)  # debug için (Railway logda görünür)
-
-        # 🔥 TÜM FORMATLARI YAKALA
+        # 🔥 cevap yakalama
         if isinstance(data, list) and "generated_text" in data[0]:
             cevap = data[0]["generated_text"]
 
@@ -240,10 +243,10 @@ async def sor(ctx, *, soru):
             cevap = data["generated_text"]
 
         elif isinstance(data, dict) and "error" in data:
-            cevap = f"⚠️ Hata: {data['error']}"
+            cevap = f"⚠️ {data['error']}"
 
         else:
-            cevap = str(data)
+            cevap = "Cevap bulunamadı 😢"
 
         await msg.edit(
             content=f"🧠 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Cevap:\n{cevap}"
@@ -251,6 +254,7 @@ async def sor(ctx, *, soru):
 
     except Exception as e:
         await msg.edit(content=f"❌ Hata: {e}")
+
 
 @bot.command()
 @commands.has_permissions(administrator=True)
