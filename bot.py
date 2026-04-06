@@ -220,36 +220,33 @@ async def sor(ctx, *, soru):
 
     try:
         import requests
+        from bs4 import BeautifulSoup
 
-        # 1️⃣ DuckDuckGo
-        url = "https://api.duckduckgo.com/"
-        params = {
-            "q": soru,
-            "format": "json",
-            "no_html": 1,
-            "skip_disambig": 1
-        }
+        query = soru.replace(" ", "_")
 
-        res = requests.get(url, params=params)
-        data = res.json()
+        url = f"https://tr.wikipedia.org/wiki/{query}"
+        res = requests.get(url)
 
-        cevap = data.get("Abstract")
+        if res.status_code != 200:
+            await msg.edit(content="❌ Bilgi bulunamadı.")
+            return
 
-        # 2️⃣ Wikipedia fallback
+        soup = BeautifulSoup(res.text, "html.parser")
+
+        paragraphs = soup.select("p")
+
+        cevap = ""
+        for p in paragraphs:
+            text = p.get_text().strip()
+            if text:
+                cevap = text
+                break
+
         if not cevap:
-            wiki_url = "https://tr.wikipedia.org/api/rest_v1/page/summary/" + soru.replace(" ", "%20")
-            wiki_res = requests.get(wiki_url)
-
-            if wiki_res.status_code == 200:
-                wiki_data = wiki_res.json()
-                cevap = wiki_data.get("extract")
-
-        # 3️⃣ Hala yoksa
-        if not cevap:
-            cevap = "Sonuç bulunamadı 😢"
+            cevap = "Bilgi bulunamadı 😢"
 
         await msg.edit(
-            content=f"🌐 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Sonuç:\n{cevap}"
+            content=f"🌐 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Sonuç:\n{cevap[:500]}"
         )
 
     except Exception as e:
