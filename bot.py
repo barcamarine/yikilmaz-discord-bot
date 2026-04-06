@@ -216,11 +216,12 @@ async def load_system_events():
 
 @bot.command()
 async def sor(ctx, *, soru):
-    msg = await ctx.send("🔍 Google'da aranıyor...")
+    msg = await ctx.send("🔍 Araştırıyorum...")
 
     try:
         import requests
 
+        # 1️⃣ DuckDuckGo
         url = "https://api.duckduckgo.com/"
         params = {
             "q": soru,
@@ -234,6 +235,16 @@ async def sor(ctx, *, soru):
 
         cevap = data.get("Abstract")
 
+        # 2️⃣ Wikipedia fallback
+        if not cevap:
+            wiki_url = "https://tr.wikipedia.org/api/rest_v1/page/summary/" + soru.replace(" ", "%20")
+            wiki_res = requests.get(wiki_url)
+
+            if wiki_res.status_code == 200:
+                wiki_data = wiki_res.json()
+                cevap = wiki_data.get("extract")
+
+        # 3️⃣ Hala yoksa
         if not cevap:
             cevap = "Sonuç bulunamadı 😢"
 
