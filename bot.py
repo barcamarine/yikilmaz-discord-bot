@@ -230,11 +230,20 @@ async def sor(ctx, *, soru):
 
         data = response.json()
 
-        # cevap çekme
-        if isinstance(data, list):
+        print(data)  # debug için (Railway logda görünür)
+
+        # 🔥 TÜM FORMATLARI YAKALA
+        if isinstance(data, list) and "generated_text" in data[0]:
             cevap = data[0]["generated_text"]
+
+        elif isinstance(data, dict) and "generated_text" in data:
+            cevap = data["generated_text"]
+
+        elif isinstance(data, dict) and "error" in data:
+            cevap = f"⚠️ Hata: {data['error']}"
+
         else:
-            cevap = "Cevap alınamadı 😢"
+            cevap = str(data)
 
         await msg.edit(
             content=f"🧠 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Cevap:\n{cevap}"
