@@ -220,11 +220,11 @@ async def sor(ctx, *, soru):
 
     try:
         import requests
+        import re
 
-        headers = {
-            "User-Agent": "Mozilla/5.0"
-        }
+        headers = {"User-Agent": "Mozilla/5.0"}
 
+        # Wikipedia search
         search_url = "https://tr.wikipedia.org/w/api.php"
         params = {
             "action": "query",
@@ -234,12 +234,8 @@ async def sor(ctx, *, soru):
         }
 
         res = requests.get(search_url, params=params, headers=headers)
-
-        if res.status_code != 200 or not res.text:
-            await msg.edit(content="⚠️ Wikipedia erişim engellendi.")
-            return
-
         data = res.json()
+
         results = data.get("query", {}).get("search", [])
 
         if not results:
@@ -250,16 +246,20 @@ async def sor(ctx, *, soru):
 
         summary_url = f"https://tr.wikipedia.org/api/rest_v1/page/summary/{title}"
         summary_res = requests.get(summary_url, headers=headers)
-
-        if summary_res.status_code != 200 or not summary_res.text:
-            await msg.edit(content="⚠️ Bilgi alınamadı.")
-            return
-
         summary_data = summary_res.json()
-        cevap = summary_data.get("extract", "Bilgi bulunamadı.")
+
+        cevap = summary_data.get("extract", "")
+
+        # 🔥 AKILLI KISIM
+        soru_lower = soru.lower()
+
+        if "kaç yılında doğdu" in soru_lower or "doğum" in soru_lower:
+            yil = re.findall(r"\b\d{4}\b", cevap)
+            if yil:
+                cevap = f"{title} doğum yılı: {yil[0]}"
 
         await msg.edit(
-            content=f"🌐 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Sonuç:\n{cevap[:500]}"
+            content=f"🌐 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Sonuç:\n{cevap[:300]}"
         )
 
     except Exception as e:
