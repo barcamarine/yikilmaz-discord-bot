@@ -5,3 +5,4 @@ pytz
 yt-dlp
 PyNaCl
 ffmpeg-python
+openai
