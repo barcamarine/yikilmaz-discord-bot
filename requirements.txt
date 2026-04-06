@@ -6,3 +6,4 @@ yt-dlp
 PyNaCl
 ffmpeg-python
 requests
+beautifulsoup4
