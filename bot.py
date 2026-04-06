@@ -509,18 +509,16 @@ async def on_message(message):
         return
 
     if message.channel.id == ZARVS_CHANNEL_ID:
-        if not message.content.startswith("!zarvs"):
+
+        # sadece !zarvs komutu izinli
+        if not message.content.lower().startswith("!zarvs"):
             try:
                 await message.delete()
 
-                # uyarı mesajı
                 warn = await message.channel.send("❌ Bu kanalda sadece !zarvs komutu kullanılabilir!")
 
-                # 5 saniye bekle
                 import asyncio
                 await asyncio.sleep(5)
-
-                # uyarıyı sil
                 await warn.delete()
 
             except:
