@@ -214,27 +214,27 @@ async def load_system_events():
 
 # ==================== KOMUTLAR ====================
 
-    @bot.command()
-    async def sor(ctx, *, soru):
-        msg = await ctx.send("🔍 Araştırıyorum...")
+@bot.command()
+async def sor(ctx, *, soru):
+    msg = await ctx.send("🔍 Araştırıyorum...")
 
-        try:
-            response = await client.chat.completions.create(
-                model="gpt-4.1-mini",
-                messages=[
-                    {"role": "system", "content": "Kısa ve net cevap ver, Türkçe konuş."},
-                    {"role": "user", "content": soru}
+    try:
+        response = await client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "system", "content": "Kısa ve net cevap ver, Türkçe konuş."},
+                {"role": "user", "content": soru}
             ]
         )
 
-            cevap = response.choices[0].message.content
+        cevap = response.choices[0].message.content
 
-            await msg.edit(
-                content=f"🧠 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Cevap:\n{cevap}"
+        await msg.edit(
+            content=f"🧠 {ctx.author.mention} sordu:\n**{soru}**\n\n📌 Cevap:\n{cevap}"
         )
 
-        except Exception as e:
-            await msg.edit(content=f"❌ Hata: {e}")
+    except Exception as e:
+        await msg.edit(content=f"❌ Hata: {e}")
 
 @bot.command()
 @commands.has_permissions(administrator=True)
