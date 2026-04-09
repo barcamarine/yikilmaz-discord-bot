@@ -580,6 +580,26 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+
+WELCOME_CHANNEL_ID = 792408594465030165  # kanal ID buraya
+
+@bot.event
+async def on_member_join(member):
+    channel = bot.get_channel(WELCOME_CHANNEL_ID)
+    
+    if channel:
+        await channel.send(f"{member.mention} sunucuya yeni biri katıldı.")
+
+
+@bot.event
+async def on_member_update(before, after):
+    if before.pending and not after.pending:
+        channel = bot.get_channel(WELCOME_CHANNEL_ID)
+        
+        if channel:
+            await channel.send(f"{after.mention} sunucuya katıldı.")
+
+
 TOKEN = os.getenv('DISCORD_TOKEN')
 if not TOKEN:
     raise ValueError("DISCORD_TOKEN bulunamadı! Railway Variables'a ekleyin.")
