@@ -125,7 +125,7 @@ async def load_system_events():
     (0, 13, 50, "📖 Kayıp Alfabe", "Pazartesi"),
     (0, 14, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
     (0, 18, 50, "🔥 Kusursuz Cehennem", "Pazartesi"),
-    (0, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Pazartesi"),
+    (0, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Pazartesi"),
     (0, 20, 50, "⚔️ Düello Turnuvası (Savaşçı)", "Pazartesi"),
     (0, 21, 30, "🐉 Antik Ejderha Kutbu", "Pazartesi"),
     (0, 22, 20, "🛡️ Savaş Arenası", "Pazartesi"),
@@ -135,7 +135,7 @@ async def load_system_events():
     (1, 12, 51, " **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ** :pray: :heart:", "Salı"),
     (1, 14, 50, "📖 Kayıp Alfabe", "Salı"),
     (1, 18, 50, "🟢 Yeşil Vadi", "Salı"),
-    (1, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Salı"),
+    (1, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Salı"),
     (1, 20, 50, "⚔️ Düello Turnuvası (Ninja) - Kayıp Alfabe Etkinliği", "Salı"),
     (1, 22, 20, "🛡️ Savaş Arenası", "Salı"),
     (1, 23, 5, "⚔️ 8v8 Lonca Savaşı", "Salı"),
@@ -144,7 +144,7 @@ async def load_system_events():
     (2, 12, 50, "🔥 Kusursuz Cehennem", "Çarşamba"),
     (2, 12, 51, " **UYANAN EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ** :pray: :heart:", "Çarşamba"),
     (2, 18, 50, "📖 Kayıp Alfabe", "Çarşamba"),
-    (2, 19, 51, "🔥 *DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Çarşamba"),
+    (2, 19, 51, "🔥 *DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Çarşamba"),
     (2, 20, 50, "⚔️ Düello Turnuvası (Sura) - Kusursuz Cehennem", "Çarşamba"),
     (2, 21, 30, "🐉 Antik Ejderha Kutbu", "Çarşamba"),
     (2, 22, 20, "👑 Üç İmparatorluk Savaşı", "Çarşamba"),
@@ -165,7 +165,7 @@ async def load_system_events():
     (4, 14, 50, "🔥 Kusursuz Cehennem", "Cuma"),
     (4, 12, 51, "📖 ** EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ** :pray: :heart:", "Cuma"),
     (4, 19, 50, "🔥 Kusursuz Cehennem", "Cuma"),
-    (4, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Cuma"),
+    (4, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Cuma"),
     (4, 20, 50, "⚔️ Düello Turnuvası (Genel)", "Cuma"),
     (4, 21, 30, "🐉 Antik Ejderha Kutbu", "Cuma"),
     (4, 22, 20, "🛡️ Savaş Arenası", "Cuma"),
@@ -177,7 +177,7 @@ async def load_system_events():
     (5, 12, 51, " ** EVDE OLAN BİLGİSAYAR BAŞINDA OYUNDA  OLAN MÜSAİT DURUMDA OLAN HERKESİ <#1175190408846913597> 'NA BEKLİYORUZ** :pray: :heart:", "Cumartesi"),
     (5, 14, 50, "🟢 Yeşil Vadi", "Cumartesi"),
     (5, 18, 50, "📖 Kayıp Alfabe", "Cumartesi"),
-    (5, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Cumartesi"),
+    (5, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Cumartesi"),
     (5, 20, 50, "🟢 Yeşil Vadi", "Cumartesi"),
     (5, 21, 30, "🐉 Antik Ejderha Kutbu", "Cumartesi"),
     (5, 22, 20, "👑 Üç İmparatorluk Savaşı", "Cumartesi"),
@@ -188,7 +188,7 @@ async def load_system_events():
     (6, 14, 50, "📖 Kayıp Alfabe", "Pazar"),
     (6, 18, 50, "🟢 Yeşil Vadi", "Pazar"),
     (6, 19, 50, "🟢 Yeşil Vadi", "Pazar"),
-    (6, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN *HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Pazar"),
+    (6, 19, 51, "🔥 **DEĞERLİ ABİLERİM KARDEŞLERİM İŞTEN GELEN OKULDAN GELEN MÜSAİT DURUMA GEÇEN HERKESİ BİRLİKTELİĞİMİZİN DEVAMI İÇİN 20:00 İLE 00:00 ARASI LÜTFEN DİSCORDA GELMEYE ÖZEN GÖSTERELİM**", "Pazar"),
     (6, 20, 50, "📖 Kayıp Alfabe", "Pazar"),
     (6, 21, 30, "🐉 Antik Ejderha Kutbu", "Pazar"),
     (6, 22, 20, "🛡️ Savaş Arenası", "Pazar"),
@@ -200,10 +200,14 @@ async def load_system_events():
         
         if count[0] == 0:
             for day, hour, minute, msg, day_name in events:
-                if "UYANAN EVDE OLAN" in msg or "DEĞERLİ ABİLERİM KARDEŞLERİM" in msg:
+                if (
+                    "UYANAN" in msg or
+                    "EVDE OLAN BİLGİSAYAR BAŞINDA" in msg or
+                    "DEĞERLİ ABİLERİM KARDEŞLERİM" in msg
+                ):
                     full_msg = f"||@everyone|| {msg}"
                 else:
-                    full_msg = f"||@everyone|| 📢 10 dakika sonra {msg} başlıyor!"
+                     full_msg = f"||@everyone|| 📢 10 dakika sonra {msg} başlıyor!"
                     
                 await db.execute('''
                     INSERT INTO weekly (day, day_name, channel_id, message, hour, minute, is_system, created_by)
