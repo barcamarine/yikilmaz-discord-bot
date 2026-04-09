@@ -588,7 +588,7 @@ async def on_member_join(member):
     channel = bot.get_channel(WELCOME_CHANNEL_ID)
     
     if channel:
-        await channel.send(f"{member.mention} sunucuya yeni biri katıldı.")
+        await channel.send(f"⚠️ {member.mention} sunucuya yeni biri katıldı.")
 
 
 @bot.event
@@ -597,7 +597,7 @@ async def on_member_update(before, after):
         channel = bot.get_channel(WELCOME_CHANNEL_ID)
         
         if channel:
-            await channel.send(f"{after.mention} sunucuya katıldı.")
+            await channel.send(f"✅ {after.mention} sunucuya katıldı.")
 
 
 TOKEN = os.getenv('DISCORD_TOKEN')
