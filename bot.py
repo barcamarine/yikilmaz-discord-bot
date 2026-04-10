@@ -7,6 +7,20 @@ import aiosqlite
 import pytz
 from datetime import datetime, time
 from dotenv import load_dotenv
+AKTIF_OYUN = False
+OYUN_HARF = ""
+OYUN_KANAL = None
+OYUNCU_PUAN = {}
+GECERLI_HARFLER = list("ABÇDEGHIİKLMNORSŞTUYVZ")
+
+def gecerli_mi(kelime):
+    if len(kelime) < 3:
+        return False
+
+    if len(set(kelime)) == 1:  # aaa gibi
+        return False
+
+    return True
 
 load_dotenv()
 
@@ -25,7 +39,10 @@ ZARVS_LAFLAR = [
     "⌛ söz vermedik ama elbet bir gün",
     "🤨 kudurdun mu sen?",
     "🗑️ çöp poşeti",
-    "🦾 sana n11.com'dan kol alalım", 
+    "🦾 sana n11.com'dan kol alalım",
+    "📦️ paket oldun",
+    "🎲🎲 iki zara 100bin verdik bizimi koparıyosun",
+    "🎲 zar tutuyosun karşimm",
 ]
 
 ZAR_GIF = "https://www.hareketligifler.net/data/media/710/zar-hareketli-resim-0016.gif"
@@ -463,7 +480,7 @@ async def zarvs(ctx, uye: discord.Member):
         return await ctx.send("😅 Kendinle oynayamazsın!")
 
     import random
-    import asyncio
+    
 
     # 🎬 GIF ile başlangıç
     embed = discord.Embed(title="🎲 Zar atılıyor...")
@@ -474,21 +491,27 @@ async def zarvs(ctx, uye: discord.Member):
     await asyncio.sleep(4)
 
     # 🎲 zarlar
-    sen = random.randint(1, 6)
-    rakip = random.randint(1, 6)
+    while True:
+        sen = random.randint(1, 6)
+        rakip = random.randint(1, 6)
 
-    sonuc = f"🎲 {ctx.author.mention} vs {uye.mention}\n\n"
-    sonuc += f"{ctx.author.mention} → 🎲 {sen}\n"
-    sonuc += f"{uye.mention} → 🎲 {rakip}\n\n"
+        sonuc = f"🎲 {ctx.author.mention} vs {uye.mention}\n\n"
+        sonuc += f"{ctx.author.mention} → 🎲 {sen}\n"
+        sonuc += f"{uye.mention} → 🎲 {rakip}\n\n"
 
-    if sen > rakip:
-        kazanan = ctx.author
-        kaybeden = uye
-    elif rakip > sen:
-        kazanan = uye
-        kaybeden = ctx.author
-    else:
-        return await msg.edit(content=sonuc + "🤝 Berabere! Tekrar deneyin.")
+        if sen == rakip:
+            await msg.edit(content=sonuc + "🤝 Berabere! Tekrar atılıyor... ♻️", embed=None)
+            await asyncio.sleep(2)
+            continue
+
+        elif sen > rakip:
+            kazanan = ctx.author
+            kaybeden = uye
+        else:
+            kazanan = uye
+            kaybeden = ctx.author
+
+        break
 
     laf = random.choice(ZARVS_LAFLAR)
 
@@ -498,6 +521,54 @@ async def zarvs(ctx, uye: discord.Member):
 
     embed = discord.Embed(description=sonuc)
     await msg.edit(embed=embed)
+
+@bot.command()
+async def isimsehir(ctx):
+    global AKTIF_OYUN, OYUN_HARF, OYUN_KANAL, OYUNCU_PUAN
+
+    if ctx.channel.id != ZARVS_CHANNEL_ID:
+        msg = await ctx.send("❌ Bu komut sadece zar kanalında kullanılabilir!")
+        await asyncio.sleep(5)
+        await msg.delete()
+        return
+
+    if AKTIF_OYUN:
+        return await ctx.send("❌ Zaten aktif oyun var!")
+
+    OYUNCU_PUAN = {}
+
+    OYUN_HARF = random.choice(GECERLI_HARFLER)
+
+    AKTIF_OYUN = True
+    OYUN_KANAL = ctx.channel.id
+
+    await ctx.send(
+        f"🎯 **İSİM ŞEHİR BAŞLADI!**\n\n"
+        f"📍 Şehir: **{kelime}**\n"
+        f"🔤 Harf: **{OYUN_HARF}**\n\n"
+        f"✍️ Format:\nİsim - Şehir - Hayvan\n\n"
+        f"⏳ Süre: 3 dakika!"
+    )
+
+    await asyncio.sleep(180)
+
+    AKTIF_OYUN = False
+
+    # 📊 SKOR TABLOSU
+    if not OYUNCU_PUAN:
+        return await ctx.send("❌ Kimse katılmadı!")
+
+    siralama = sorted(OYUNCU_PUAN.items(), key=lambda x: x[1]["dogru"], reverse=True)
+
+    mesaj = "🏆 **SONUÇLAR**\n\n"
+
+    for i, (user_id, veri) in enumerate(siralama, 1):
+        uye = ctx.guild.get_member(user_id)
+        if uye:
+            mesaj += f"{i}. {uye.mention} → ✅ {veri['dogru']} | ❌ {veri['yanlis']}\n"
+
+    await ctx.send(mesaj)
+
 
 # ==================== KONTROL SİSTEMİ ====================
 
@@ -561,22 +632,56 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    # zar kanalı kontrolü
     if message.channel.id == ZARVS_CHANNEL_ID:
-
-        # sadece !zarvs komutu izinli
-        if not message.content.lower().startswith("!zarvs"):
+        if not (message.content.lower().startswith("!zarvs") or message.content.lower().startswith("!isimsehir")):
             try:
                 await message.delete()
-
-                warn = await message.channel.send("❌ Bu kanalda sadece !zarvs komutu kullanılabilir!")
-
-                import asyncio
+                warn = await message.channel.send("❌ Bu kanalda sadece !zarvs ve !isimsehir kullanılabilir!")
                 await asyncio.sleep(5)
                 await warn.delete()
-
             except:
                 pass
             return
+
+    # isim şehir kontrol
+    if AKTIF_OYUN and message.channel.id == OYUN_KANAL:
+        if message.author.bot:
+            return
+            
+        try:
+            isim, sehir, hayvan = message.content.split("-")
+
+            isim = isim.strip()
+            sehir = sehir.strip()
+            hayvan = hayvan.strip()
+
+            user_id = message.author.id
+
+            if user_id not in OYUNCU_PUAN:
+                OYUNCU_PUAN[user_id] = {"dogru": 0, "yanlis": 0}
+
+            isim_k = isim.lower()
+            sehir_k = sehir.lower()
+            hayvan_k = hayvan.lower()
+
+            if not (
+                isim_k.startswith(OYUN_HARF.lower()) and
+                sehir_k.startswith(OYUN_HARF.lower()) and
+                hayvan_k.startswith(OYUN_HARF.lower()) and
+                gecerli_mi(isim_k) and
+                gecerli_mi(sehir_k) and
+                gecerli_mi(hayvan_k)
+            ):
+
+                OYUNCU_PUAN[user_id]["yanlis"] += 1
+                await message.add_reaction("❌")
+            else:
+                OYUNCU_PUAN[user_id]["dogru"] += 1
+                await message.add_reaction("✅")
+
+        except:
+            pass
 
     await bot.process_commands(message)
 
