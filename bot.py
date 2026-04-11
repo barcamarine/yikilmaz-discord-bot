@@ -1,5 +1,6 @@
 import discord
 import random
+import asyncio
 from discord.ext import commands, tasks
 import os
 import requests
@@ -520,7 +521,7 @@ async def zarvs(ctx, uye: discord.Member):
     sonuc += f"{kaybeden.mention} {laf}"
 
     embed = discord.Embed(description=sonuc)
-    await msg.edit(embed=embed)
+    await msg.edit(content=None, embed=embed)
 
 @bot.command()
 async def isimsehir(ctx):
@@ -544,12 +545,10 @@ async def isimsehir(ctx):
 
     await ctx.send(
         f"🎯 **İSİM ŞEHİR BAŞLADI!**\n\n"
-        f"📍 Şehir: **{kelime}**\n"
         f"🔤 Harf: **{OYUN_HARF}**\n\n"
         f"✍️ Format:\nİsim - Şehir - Hayvan\n\n"
         f"⏳ Süre: 3 dakika!"
     )
-
     await asyncio.sleep(180)
 
     AKTIF_OYUN = False
