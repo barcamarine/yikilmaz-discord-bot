@@ -681,7 +681,20 @@ async def on_message(message):
 
         except:
             pass
+            
+    # 🔥 ping mesajına cevap sistemi
+    if message.reference:
+        try:
+            replied_msg = await message.channel.fetch_message(message.reference.message_id)
 
+            if replied_msg.author == bot.user and "7/24 nöbetteyim komutanım" in replied_msg.content:
+
+                if "aferin asker" in message.content.lower():
+                    await message.channel.send(f"{message.author.mention} sağolun komutanım 🫡")
+        except:
+            pass
+
+    
     await bot.process_commands(message)
 
 
